@@ -1,0 +1,53 @@
+{
+  "name": "@geprog/use-feathers",
+  "version": "0.0.1",
+  "description": "Vue.js compositions for Feathers",
+  "homepage": "https://geprog.com",
+  "repository": "github:geprog/use-feathers",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.esm.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "rollup -c rollup.config.js",
+    "clean": "rm -rf dist/ node_modules/",
+    "lint": "prettier --check . && eslint --max-warnings 0 .",
+    "start": "rollup -c rollup.config.js --watch",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles",
+    "test:watch": "yarn test --watch"
+  },
+  "dependencies": {
+    "@feathersjs/adapter-commons": "5.0.0-pre.3",
+    "@feathersjs/feathers": "5.0.0-pre.3",
+    "sift": "13.5.4",
+    "vue": "3.0.11"
+  },
+  "devDependencies": {
+    "@geprog/eslint-config": "0.0.1",
+    "@jest/types": "26.6.2",
+    "@types/jest": "26.0.23",
+    "@types/node": "15.12.4",
+    "@vue/test-utils": "2.0.0-rc.6",
+    "esbuild": "0.12.9",
+    "esbuild-register": "2.6.0",
+    "eslint": "7.29.0",
+    "jest": "26.6.3",
+    "jest-junit": "12.2.0",
+    "prettier": "2.3.1",
+    "rollup": "2.52.2",
+    "rollup-plugin-dts": "3.0.2",
+    "rollup-plugin-typescript2": "0.30.0",
+    "ts-jest": "26.5.6",
+    "ts-node": "10.0.0",
+    "typescript": "4.2.4"
+  }
+}
