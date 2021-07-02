@@ -8,10 +8,10 @@ function loadServiceEventHandlers<
   CustomApplication extends Application,
   T extends keyof ServiceTypes<CustomApplication>,
   M,
->(
-  service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-  params: Ref<Params>,
-  data: Ref<M[]>,
+  >(
+    service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
+    params: Ref<Params>,
+    data: Ref<M[]>,
 ): () => void {
   const onCreated = (item: M): void => {
     // ignore items which are not matching the query
@@ -67,7 +67,7 @@ export type UseFind<T> = {
 export type UseFindFunc<CustomApplication> = <
   T extends keyof ServiceTypes<CustomApplication>,
   M = ServiceModel<CustomApplication, T>,
->(
+  >(
   serviceName: T,
   params?: Ref<Params>,
 ) => UseFind<M>;
@@ -76,6 +76,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params> = ref({ paginate: false, query: {} }),
+    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
@@ -110,10 +111,12 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       await find();
     });
 
-    onBeforeUnmount(() => {
-      unloadEventHandlers();
-      feathers.off('connect', connectListener);
-    });
+    if (!disableUnloadingEventHandlers) {
+      onBeforeUnmount(() => {
+        unloadEventHandlers();
+        feathers.off('connect', connectListener);
+      });
+    }
 
     return { data, isLoading };
   };
