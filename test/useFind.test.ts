@@ -466,6 +466,7 @@ describe('Find composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('patched', expect.anything());
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
+
     it('should not unmount the event handlers when desired', () => {
       expect.assertions(3);
 
