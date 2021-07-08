@@ -1,6 +1,6 @@
 {
   "name": "@geprog/use-feathers",
-  "version": "0.0.1",
+  "version": "0.0.0-semantic-release",
   "description": "Vue.js compositions for Feathers",
   "homepage": "https://geprog.com",
   "repository": "github:geprog/use-feathers",
