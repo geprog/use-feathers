@@ -1,4 +1,4 @@
-import { Application } from '@feathersjs/feathers';
+import { Application, Params } from '@feathersjs/feathers';
 import { nextTick, ref } from 'vue';
 
 import useFindOriginal, { UseFind } from '~/useFind';
@@ -142,11 +142,16 @@ describe('Find composition', () => {
   });
 
   it('should reload data after changing the params', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     // given
     const findParams = ref({ query: { zug: 'start' } });
-    const serviceFind = jest.fn(() => Promise.resolve([]));
+    const serviceFind = jest.fn((params: Params) => {
+      if (params.query && params.query.zug === 'start') {
+        return [additionalTestModel];
+      }
+      return [testModel];
+    });
     const feathersMock = {
       service: () => ({
         find: serviceFind,
@@ -157,12 +162,17 @@ describe('Find composition', () => {
       off: jest.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
     mountComposition(() => {
-      useFind('testModels', findParams);
+      findComposition = useFind('testModels', findParams);
     });
 
+    // before then to ensure that the previous loading procedure is completed
+    await nextTick();
+    expect(findComposition && findComposition.data.value).toStrictEqual([additionalTestModel]);
+
     // when
-    findParams.value.query = { zug: 'change' };
+    findParams.value = { query: { zug: 'change' } };
     await nextTick();
 
     // then
@@ -173,6 +183,82 @@ describe('Find composition', () => {
         query: { zug: 'change' },
       }),
     );
+  });
+
+  it('should un-load data after params changes to ref with undefined or null', async () => {
+    expect.assertions(4);
+
+    // given
+    const findParams = ref<Params | undefined>({ query: { zug: 'start' } });
+    const serviceFind = jest.fn(() => Promise.resolve([testModel]));
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels', findParams);
+    });
+
+    // before then to ensure that the previous loading procedure is completed
+    await nextTick();
+    expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
+
+    // when
+    findParams.value = undefined;
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([]);
+  });
+
+  it('should indicate loading when params is ref of undefined or null and load data after changing to valid params', async () => {
+    expect.assertions(5);
+
+    // given
+    const findParams = ref<Params | undefined>();
+    const serviceFind = jest.fn((params: Params) => {
+      if (params.query && params.query.zug === 'start') {
+        return [additionalTestModel];
+      }
+      return [testModel];
+    });
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels', findParams);
+    });
+
+    // before then to ensure that the previous loading procedure is completed
+    await nextTick();
+    expect(findComposition && findComposition.isLoading).toBeTruthy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([]);
+
+    // when
+    findParams.value = { query: { zug: 'start' } };
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([additionalTestModel]);
   });
 
   describe('Event Handlers', () => {

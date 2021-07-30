@@ -8,14 +8,14 @@ function loadServiceEventHandlers<
   CustomApplication extends Application,
   T extends keyof ServiceTypes<CustomApplication>,
   M,
-  >(
-    service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-    params: Ref<Params>,
-    data: Ref<M[]>,
+>(
+  service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
+  params: Ref<Params | null | undefined>,
+  data: Ref<M[]>,
 ): () => void {
   const onCreated = (item: M): void => {
-    // ignore items which are not matching the query
-    if (!sift(params.value.query)(item)) {
+    // ignore items if not params is set or which are not matching the query
+    if (!params.value || !sift(params.value.query)(item)) {
       return;
     }
 
@@ -27,8 +27,8 @@ function loadServiceEventHandlers<
   };
 
   const onItemChanged = (changedItem: M): void => {
-    // ignore items not matching the query
-    if (!sift(params.value.query)(changedItem)) {
+    // ignore items if not params is set or not matching the query
+    if (!params.value || !sift(params.value.query)(changedItem)) {
       // remove item from the list if they have been on it before
       data.value = data.value.filter((item) => getId(item) !== getId(changedItem));
       return;
@@ -67,15 +67,15 @@ export type UseFind<T> = {
 export type UseFindFunc<CustomApplication> = <
   T extends keyof ServiceTypes<CustomApplication>,
   M = ServiceModel<CustomApplication, T>,
-  >(
+>(
   serviceName: T,
-  params?: Ref<Params>,
+  params?: Ref<Params | null | undefined>,
 ) => UseFind<M>;
 
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
-    params: Ref<Params> = ref({ paginate: false, query: {} }),
+    params: Ref<Params | null | undefined> = ref({ paginate: false, query: {} }),
     { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
@@ -87,6 +87,11 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const find = async () => {
       isLoading.value = true;
+      if (!params.value) {
+        data.value = [];
+        return;
+      }
+
       // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
       // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
       const res = await (service as unknown as ServiceMethods<M>).find(params.value);
@@ -94,12 +99,9 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = false;
     };
 
-    watch(
-      () => params.value.query,
-      () => {
-        void find();
-      },
-    );
+    watch(params, () => {
+      void find();
+    });
 
     const connectListener = () => {
       void find();
