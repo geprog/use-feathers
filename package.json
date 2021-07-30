@@ -20,9 +20,11 @@
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "clean": "rm -rf dist/ node_modules/",
-    "lint": "prettier --check . && eslint --max-warnings 0 .",
+    "lint": "eslint --max-warnings 0 .",
+    "lint:format": "prettier --check .",
     "start": "rollup -c rollup.config.js --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles",
+    "typecheck": "tsc --noEmit",
     "test:watch": "yarn test --watch",
     "release": "semantic-release"
   },
