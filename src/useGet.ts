@@ -7,10 +7,10 @@ function loadServiceEventHandlers<
   CustomApplication extends Application,
   T extends keyof ServiceTypes<CustomApplication>,
   M,
-  >(
-    service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-    _id: Ref<Id | undefined>,
-    data: Ref<M | undefined>,
+>(
+  service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
+  _id: Ref<Id | undefined>,
+  data: Ref<M | undefined>,
 ): () => void {
   const onCreated = (item: M): void => {
     if (_id.value === getId(item)) {
@@ -54,7 +54,7 @@ export type UseGet<T> = {
 export type UseGetFunc<CustomApplication> = <
   T extends keyof ServiceTypes<CustomApplication>,
   M = ServiceModel<CustomApplication, T>,
-  >(
+>(
   serviceName: T,
   _id: Ref<Id | undefined>,
 ) => UseGet<M>;
