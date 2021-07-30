@@ -1,7 +1,12 @@
 name: Tests
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
+    branches:
+      - main
 
 env:
   YARN_CACHE_FOLDER: ~/.yarn
@@ -10,6 +15,7 @@ jobs:
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-latest
+    if: "github.event_name == 'pull_request'"
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -38,6 +44,36 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           skip-step: install
           test-script: yarn test
+
+  unit-tests-main:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    if: "github.ref == 'refs/heads/main'"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Caching
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.YARN_CACHE_FOLDER }}
+          key: ${{ runner.OS }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-yarn-${{ env.cache-name }}
+            ${{ runner.OS }}-yarn-
+
+      - name: Installing dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Unit test
+        run: yarn test
 
   typecheck:
     name: Typecheck
