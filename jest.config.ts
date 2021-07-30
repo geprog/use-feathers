@@ -15,7 +15,8 @@ const config: Config.InitialOptions = {
   moduleNameMapper,
   testEnvironment: 'jest-environment-jsdom',
   collectCoverage: true,
-  coverageReporters: ['text', 'text-summary'],
+  coverageReporters: ['json'],
+  testLocationInResults: true,
   setupFilesAfterEnv: ['<rootDir>/test/__setup__/console.ts'],
 };
 

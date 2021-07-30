@@ -23,7 +23,7 @@
     "lint": "eslint --max-warnings 0 .",
     "lint:format": "prettier --check .",
     "start": "rollup -c rollup.config.js --watch",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
     "typecheck": "tsc --noEmit",
     "test:watch": "yarn test --watch",
     "release": "semantic-release"
@@ -48,7 +48,6 @@
     "esbuild-register": "2.6.0",
     "eslint": "7.29.0",
     "jest": "26.6.3",
-    "jest-junit": "12.2.0",
     "prettier": "2.3.1",
     "rollup": "2.52.2",
     "rollup-plugin-dts": "3.0.2",

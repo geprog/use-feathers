@@ -38,17 +38,14 @@ jobs:
       - name: Installing dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Unit test
+        run: yarn test
+
       - uses: artiomtr/jest-coverage-report-action@v2.0-rc.1
         if: "github.event_name == 'pull_request'"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          skip-step: install
-          test-script: yarn test
-          package-manager: yarn
-
-      - name: Unit test
-        if: "github.ref == 'refs/heads/main'"
-        run: yarn test
+          skip-step: all
 
   typecheck:
     name: Typecheck
