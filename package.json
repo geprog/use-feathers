@@ -24,8 +24,8 @@
     "lint:format": "prettier --check .",
     "start": "rollup -c rollup.config.js --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
-    "typecheck": "tsc --noEmit",
     "test:watch": "yarn test --watch",
+    "typecheck": "tsc --noEmit",
     "release": "semantic-release"
   },
   "dependencies": {
