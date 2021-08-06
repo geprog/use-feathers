@@ -27,7 +27,7 @@ function loadServiceEventHandlers<
   };
 
   const onItemChanged = (changedItem: M): void => {
-    // ignore items if not params is set or not matching the query
+    // ignore items not matching the query or when no params are set 
     if (!params.value || !sift(params.value.query)(changedItem)) {
       // remove item from the list if they have been on it before
       data.value = data.value.filter((item) => getId(item) !== getId(changedItem));
