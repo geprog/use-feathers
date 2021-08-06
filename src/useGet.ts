@@ -30,15 +30,23 @@ function loadServiceEventHandlers<
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('created', onCreated);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('removed', onRemoved);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('patched', onItemChanged);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('updated', onItemChanged);
 
   const unloadEventHandlers = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('created', onCreated);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('removed', onRemoved);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('patched', onItemChanged);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('updated', onItemChanged);
   };
 
