@@ -14,7 +14,7 @@ function loadServiceEventHandlers<
   data: Ref<M[]>,
 ): () => void {
   const onCreated = (item: M): void => {
-    // ignore items if not params is set or which are not matching the query
+    // ignore items not matching the query or when no params are set
     if (!params.value || !sift(params.value.query)(item)) {
       return;
     }
