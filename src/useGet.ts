@@ -7,10 +7,10 @@ function loadServiceEventHandlers<
   CustomApplication extends Application,
   T extends keyof ServiceTypes<CustomApplication>,
   M,
-  >(
-    service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-    _id: Ref<Id | undefined>,
-    data: Ref<M | undefined>,
+>(
+  service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
+  _id: Ref<Id | undefined>,
+  data: Ref<M | undefined>,
 ): () => void {
   const onCreated = (item: M): void => {
     if (_id.value === getId(item)) {
@@ -30,15 +30,23 @@ function loadServiceEventHandlers<
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('created', onCreated);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('removed', onRemoved);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('patched', onItemChanged);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   service.on('updated', onItemChanged);
 
   const unloadEventHandlers = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('created', onCreated);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('removed', onRemoved);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('patched', onItemChanged);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('updated', onItemChanged);
   };
 
@@ -54,7 +62,7 @@ export type UseGet<T> = {
 export type UseGetFunc<CustomApplication> = <
   T extends keyof ServiceTypes<CustomApplication>,
   M = ServiceModel<CustomApplication, T>,
-  >(
+>(
   serviceName: T,
   _id: Ref<Id | undefined>,
 ) => UseGet<M>;
