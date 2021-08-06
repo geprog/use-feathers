@@ -18,11 +18,11 @@
     "/dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "rollup -c rollup.config.ts --configPlugin rollup-plugin-typescript2",
     "clean": "rm -rf dist/ node_modules/",
     "lint": "eslint --max-warnings 0 .",
     "lint:format": "prettier --check .",
-    "start": "rollup -c rollup.config.js --watch",
+    "start": "yarn build --watch",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
     "test:watch": "yarn test --watch",
     "typecheck": "tsc --noEmit",
