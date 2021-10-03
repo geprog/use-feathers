@@ -6546,10 +6546,10 @@ side-channel@^1.0.4:
     get-intrinsic "^1.0.2"
     object-inspect "^1.9.0"
 
-sift@13.5.4:
-  version "13.5.4"
-  resolved "https://registry.yarnpkg.com/sift/-/sift-13.5.4.tgz#7b2a67f724c8b2fca121fcfdef4011bb1ea4e3ef"
-  integrity sha512-J/d0r/MJlD7vG3j6FZI3/KnN+MxEmPUx2nyKNawysbl2ktisEnAWI5j0AgHM19p4xFA2vDXve4i8TQYYfi9O6Q==
+sift@15.0.0:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/sift/-/sift-15.0.0.tgz#e3a809a40ca792bf17ad64700b97a5ed7be5dacd"
+  integrity sha512-FrKLXaUad4IYEpIzs9BAaXXNwcRnzg2vPfPTDgPRrKncMhgx9wftFzJrIRh9SCxxz0zHgvSKULQRRGA9JQWcZQ==
 
 signal-exit@^3.0.0, signal-exit@^3.0.2, signal-exit@^3.0.3:
   version "3.0.5"
