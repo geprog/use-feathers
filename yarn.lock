@@ -379,7 +379,7 @@
     eslint-plugin-vue-scoped-css "1.1.0"
     vue-eslint-parser "7.6.0"
 
-"@geprog/semantic-release-config@^1.0.0":
+"@geprog/semantic-release-config@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@geprog/semantic-release-config/-/semantic-release-config-1.0.0.tgz#2d60c8bf9739921e72094d1a6fdb37bd959d3a1e"
   integrity sha512-C/iJ9LVyp/jF0qUk21OMlW0cdUu1WOVuOiuPyUAwNgkWnGvi5jw2otRffTG+sAzCEzUr0G1O8PYGDCz1BfkCrA==
