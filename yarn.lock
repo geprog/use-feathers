@@ -325,31 +325,45 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@feathersjs/adapter-commons@5.0.0-pre.10":
-  version "5.0.0-pre.10"
-  resolved "https://registry.yarnpkg.com/@feathersjs/adapter-commons/-/adapter-commons-5.0.0-pre.10.tgz#1b37391b77e7f55d00b1741084e7a4d2f64669b3"
-  integrity sha512-x/U7AgtRgHVIp+occYZ+Zyr+c723z/uZ3ql3wXYvwnJr8npQiqgHzigY3Q1+dVknGB01snMt5pP5whIc+qz7Cg==
+"@feathersjs/adapter-commons@5.0.0-pre.14":
+  version "5.0.0-pre.14"
+  resolved "https://registry.yarnpkg.com/@feathersjs/adapter-commons/-/adapter-commons-5.0.0-pre.14.tgz#d29602cd48b6ce2e8ed72476f637214237d818a4"
+  integrity sha512-XGCsyWjK5PmvQ1VfOvZzgtzcbGcr4Op/JXxqhV3EVPpil2zMgqG+T1Dbx8LFWiODCJz+Iu4uZy3Lo6zm6U/nMQ==
   dependencies:
-    "@feathersjs/commons" "^5.0.0-pre.10"
-    "@feathersjs/errors" "^5.0.0-pre.10"
-    "@feathersjs/feathers" "^5.0.0-pre.10"
+    "@feathersjs/commons" "^5.0.0-pre.14"
+    "@feathersjs/errors" "^5.0.0-pre.14"
+    "@feathersjs/feathers" "^5.0.0-pre.14"
 
 "@feathersjs/commons@^5.0.0-pre.10":
   version "5.0.0-pre.10"
   resolved "https://registry.yarnpkg.com/@feathersjs/commons/-/commons-5.0.0-pre.10.tgz#e7abf6ee26d5da522549f5241dfac492b5a9372e"
   integrity sha512-HOZEoLFRwiogbvY53QN94XJdSPpGKsL7VCtyKWKJAvnf5cjCUQ8OpemZnjKz1PPvpCMhEgl1LMTYLRH3ReYsrg==
 
-"@feathersjs/errors@^5.0.0-pre.10":
-  version "5.0.0-pre.10"
-  resolved "https://registry.yarnpkg.com/@feathersjs/errors/-/errors-5.0.0-pre.10.tgz#7a2c6a623517818bd6c0d32ce1ac45c586a7cbea"
-  integrity sha512-xCwWNzll5ovRBmqPPOmgCiEQ0bqENBXdCuXk5AyXdZUJiiOK+VQSPEqvd0QLbibSzLVgR5xH/QyrA3OQZEyUSQ==
+"@feathersjs/commons@^5.0.0-pre.14":
+  version "5.0.0-pre.14"
+  resolved "https://registry.yarnpkg.com/@feathersjs/commons/-/commons-5.0.0-pre.14.tgz#b22a108139532944d18532493efdf7f1b846f849"
+  integrity sha512-WR8eWaNkE5kyo1EUpvJHeIZo+HcSAjoZDnH+EsHme2Z1hX2an9QE7z2LoHcelO0wU5yn2ysgDGYosEVTEZb3sQ==
 
-"@feathersjs/feathers@5.0.0-pre.10", "@feathersjs/feathers@^5.0.0-pre.10":
+"@feathersjs/errors@^5.0.0-pre.14":
+  version "5.0.0-pre.14"
+  resolved "https://registry.yarnpkg.com/@feathersjs/errors/-/errors-5.0.0-pre.14.tgz#69d97eb68337ccd75a6cf6d20ba387ad8c14c9bd"
+  integrity sha512-Z6Ktdn+AZHxc569UPsq55Rx5gmOQFLx0uM7z+7Cp7R+1GpLYCcYl+EvKqPWocHU+Mm+mKGUqOTyJw5KoJheeBg==
+
+"@feathersjs/feathers@5.0.0-pre.10":
   version "5.0.0-pre.10"
   resolved "https://registry.yarnpkg.com/@feathersjs/feathers/-/feathers-5.0.0-pre.10.tgz#dcca5f87d85bdcdae163b73ec4fa5656999230b6"
   integrity sha512-K0BQgxXzLS9h5oRP5gNY14ZLOnaVLHJ5AhaZCgrSrovFWms9urUyleW9+3l1A0GBI8tQ3o0cTlwTj0+vr10I1Q==
   dependencies:
     "@feathersjs/commons" "^5.0.0-pre.10"
+    "@feathersjs/hooks" "^0.6.5"
+    events "^3.3.0"
+
+"@feathersjs/feathers@^5.0.0-pre.14":
+  version "5.0.0-pre.14"
+  resolved "https://registry.yarnpkg.com/@feathersjs/feathers/-/feathers-5.0.0-pre.14.tgz#390c2804e86345b067f429051872ab783059ad34"
+  integrity sha512-JlOaf3Pht4/C+ydgrWgkKCAKK/ZZUJqsP/DMSKzR6OIdkPeVoreufT+LbJTdLRyB/TtcwULSHdxczQhF6SvOHg==
+  dependencies:
+    "@feathersjs/commons" "^5.0.0-pre.14"
     "@feathersjs/hooks" "^0.6.5"
     events "^3.3.0"
 
