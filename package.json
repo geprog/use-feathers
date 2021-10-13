@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@feathersjs/adapter-commons": "5.0.0-pre.10",
-    "@feathersjs/feathers": "5.0.0-pre.10",
+    "@feathersjs/feathers": "5.0.0-pre.14",
     "sift": "13.5.4",
     "vue": "3.0.11"
   },
