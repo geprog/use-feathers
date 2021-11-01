@@ -336,7 +336,7 @@ describe('Find composition', () => {
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels', ref({ query: { mood: 'please-do-not-match' } }));
+        findComposition = useFind('testModels', ref({ query: { mood: changedTestModel.mood } }));
       });
 
       // when
@@ -344,7 +344,7 @@ describe('Find composition', () => {
 
       // then
       expect(findComposition).toBeTruthy();
-      expect(findComposition && findComposition.data.value).not.toContainEqual(changedTestModel);
+      expect(findComposition && findComposition.data.value).toContainEqual(changedTestModel);
     });
 
     it('should ignore "patch" & "update" events when query is not matching', async () => {
