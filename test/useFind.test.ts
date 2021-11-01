@@ -319,7 +319,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toContainEqual(changedTestModel);
     });
 
-    it('should listen to "patch" & "update" events when query is matching', () => {
+    it('should listen to "patch" & "update" events when query is matching', async () => {
       expect.assertions(2);
 
       // given
@@ -338,6 +338,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels', ref({ query: { mood: changedTestModel.mood } }));
       });
+      await nextTick();
 
       // when
       emitter.emit('updated', changedTestModel);
