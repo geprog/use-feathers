@@ -405,7 +405,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value.length).toStrictEqual(0);
     });
 
-    it('should listen to "remove" events', () => {
+    it('should listen to "remove" events', async () => {
       expect.assertions(2);
 
       // given
@@ -424,6 +424,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
+      await nextTick();
 
       // when
       emitter.emit('removed', testModel);
