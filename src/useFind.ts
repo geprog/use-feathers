@@ -95,7 +95,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const find = async () => {
       isLoading.value = true;
-      if (!params.value) {
+      if (params.value === undefined) {
         data.value = [];
         return;
       }
