@@ -1,4 +1,4 @@
-import { Application } from '@feathersjs/feathers';
+import type { Application } from '@feathersjs/feathers';
 import { nextTick, ref } from 'vue';
 
 import useGetOriginal, { UseGet } from '~/useGet';

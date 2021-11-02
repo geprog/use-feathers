@@ -1,4 +1,4 @@
-import { Application, Params } from '@feathersjs/feathers';
+import type { Application, Params } from '@feathersjs/feathers';
 import { nextTick, ref } from 'vue';
 
 import useFindOriginal, { UseFind } from '~/useFind';

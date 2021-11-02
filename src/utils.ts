@@ -1,5 +1,5 @@
-import { AdapterService } from '@feathersjs/adapter-commons';
-import { Application, Id, ServiceMethods } from '@feathersjs/feathers';
+import type { AdapterService } from '@feathersjs/adapter-commons';
+import type { Application, Id, ServiceMethods } from '@feathersjs/feathers';
 
 export type PotentialIds = {
   id?: Id;
