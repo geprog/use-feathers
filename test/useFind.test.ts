@@ -405,7 +405,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toContainEqual(changedTestModel);
     });
 
-    it('should listen to "patch" & "update" events when query is matching', () => {
+    it('should listen to "patch" & "update" events when query is matching', async () => {
       expect.assertions(2);
 
       // given
@@ -422,15 +422,16 @@ describe('Find composition', () => {
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels', ref({ query: { mood: 'please-do-not-match' } }));
+        findComposition = useFind('testModels', ref({ query: { mood: changedTestModel.mood } }));
       });
+      await nextTick();
 
       // when
       emitter.emit('updated', changedTestModel);
 
       // then
       expect(findComposition).toBeTruthy();
-      expect(findComposition && findComposition.data.value).not.toContainEqual(changedTestModel);
+      expect(findComposition && findComposition.data.value).toContainEqual(changedTestModel);
     });
 
     it('should ignore "patch" & "update" events when query is not matching', async () => {
@@ -491,7 +492,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value.length).toStrictEqual(0);
     });
 
-    it('should listen to "remove" events', () => {
+    it('should listen to "remove" events', async () => {
       expect.assertions(2);
 
       // given
@@ -510,6 +511,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
+      await nextTick();
 
       // when
       emitter.emit('removed', testModel);
