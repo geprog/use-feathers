@@ -23,7 +23,7 @@
     "lint": "eslint --max-warnings 0 .",
     "lint:format": "prettier --check .",
     "start": "yarn build --watch",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
+    "test": "jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
     "test:watch": "yarn test --watch",
     "typecheck": "tsc --noEmit",
     "release": "semantic-release"
@@ -48,8 +48,7 @@
     "rollup-plugin-typescript2": "0.30.0",
     "semantic-release": "18.0.0",
     "ts-jest": "27.0.7",
-    "ts-node": "10.0.0",
-    "typescript": "4.2.4",
+    "typescript": "^4.4.4",
     "vue": "3.2.21"
   },
   "peerDependencies": {
