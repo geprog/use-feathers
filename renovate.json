@@ -1,12 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:base"],
-  "packageRules": [
-    {
-      "matchPackageNames": ["renovate/renovate"],
-      "dependencyDashboardApproval": true
-    }
-  ],
-  "dependencyDashboard": true,
   "dependencyDashboardApproval": true
 }
