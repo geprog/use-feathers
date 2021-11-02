@@ -1,4 +1,4 @@
-import { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
 import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
 

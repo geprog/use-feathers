@@ -1,4 +1,4 @@
-import { Application, FeathersService, Id, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Id, ServiceMethods } from '@feathersjs/feathers';
 import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
