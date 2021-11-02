@@ -10,7 +10,7 @@ function loadServiceEventHandlers<
   M,
 >(
   service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-  params: Ref<Params | null | undefined>,
+  params: Ref<Params | undefined>,
   data: Ref<M[]>,
 ): () => void {
   const onCreated = (item: M): void => {
@@ -77,13 +77,13 @@ export type UseFindFunc<CustomApplication> = <
   M = ServiceModel<CustomApplication, T>,
 >(
   serviceName: T,
-  params?: Ref<Params | null | undefined>,
+  params?: Ref<Params | undefined>,
 ) => UseFind<M>;
 
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
-    params: Ref<Params | null | undefined> = ref({ paginate: false, query: {} }),
+    params: Ref<Params | undefined> = ref({ paginate: false, query: {} }),
     { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)

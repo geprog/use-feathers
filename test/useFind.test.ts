@@ -185,7 +185,7 @@ describe('Find composition', () => {
     );
   });
 
-  it('should un-load data after params changes to ref with undefined or null', async () => {
+  it('should un-load data after params changes to ref of undefined', async () => {
     expect.assertions(4);
 
     // given
@@ -220,7 +220,7 @@ describe('Find composition', () => {
     expect(findComposition && findComposition.data.value).toStrictEqual([]);
   });
 
-  it('should indicate loading when params is ref of undefined or null and load data after changing to valid params', async () => {
+  it('should indicate loading when params is ref of undefined and load data after changing to valid params', async () => {
     expect.assertions(5);
 
     // given
