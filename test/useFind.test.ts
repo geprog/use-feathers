@@ -186,7 +186,7 @@ describe('Find composition', () => {
   });
 
   it('should un-load data after params changes to ref of undefined', async () => {
-    expect.assertions(4);
+    expect.assertions(5);
 
     // given
     const findParams = ref<Params | undefined>({ query: { zug: 'start' } });
@@ -217,11 +217,48 @@ describe('Find composition', () => {
     // then
     expect(serviceFind).toHaveBeenCalledTimes(1);
     expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
     expect(findComposition && findComposition.data.value).toStrictEqual([]);
   });
 
-  it('should indicate loading when params is ref of undefined and load data after changing to valid params', async () => {
+  it('should un-load data after params changes to ref of null', async () => {
     expect.assertions(5);
+
+    // given
+    const findParams = ref<Params | null>({ query: { zug: 'start' } });
+    const serviceFind = jest.fn(() => Promise.resolve([testModel]));
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels', findParams);
+    });
+
+    // before then to ensure that the previous loading procedure is completed
+    await nextTick();
+    expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
+
+    // when
+    findParams.value = null;
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([]);
+  });
+
+  it('should return empty data when params is ref of undefined and load data after changing to valid params', async () => {
+    expect.assertions(6);
 
     // given
     const findParams = ref<Params | undefined>();
@@ -258,6 +295,49 @@ describe('Find composition', () => {
     // then
     expect(serviceFind).toHaveBeenCalledTimes(1);
     expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([additionalTestModel]);
+  });
+
+  it('should return empty data when params is ref of null and load data after changing to valid params', async () => {
+    expect.assertions(6);
+
+    // given
+    const findParams = ref<Params | null>(null);
+    const serviceFind = jest.fn((params: Params) => {
+      if (params.query && params.query.zug === 'start') {
+        return [additionalTestModel];
+      }
+      return [testModel];
+    });
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels', findParams);
+    });
+
+    // before then to ensure that the previous loading procedure is completed
+    await nextTick();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([]);
+
+    // when
+    findParams.value = { query: { zug: 'start' } };
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
     expect(findComposition && findComposition.data.value).toStrictEqual([additionalTestModel]);
   });
 
