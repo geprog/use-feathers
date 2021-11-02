@@ -97,6 +97,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = true;
       if (params.value === undefined) {
         data.value = [];
+        isLoading.value = false;
         return;
       }
 

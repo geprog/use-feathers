@@ -248,7 +248,7 @@ describe('Find composition', () => {
 
     // before then to ensure that the previous loading procedure is completed
     await nextTick();
-    expect(findComposition && findComposition.isLoading).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
     expect(findComposition && findComposition.data.value).toStrictEqual([]);
 
     // when
