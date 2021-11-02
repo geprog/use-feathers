@@ -10,12 +10,12 @@ function loadServiceEventHandlers<
   M,
 >(
   service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
-  params: Ref<Params>,
+  params: Ref<Params | undefined | null>,
   data: Ref<M[]>,
 ): () => void {
   const onCreated = (item: M): void => {
-    // ignore items which are not matching the query
-    if (!sift(params.value.query)(item)) {
+    // ignore items not matching the query or when no params are set
+    if (!params.value || !sift(params.value.query)(item)) {
       return;
     }
 
@@ -27,8 +27,8 @@ function loadServiceEventHandlers<
   };
 
   const onItemChanged = (changedItem: M): void => {
-    // ignore items not matching the query
-    if (!sift(params.value.query)(changedItem)) {
+    // ignore items not matching the query or when no params are set
+    if (!params.value || !sift(params.value.query)(changedItem)) {
       // remove item from the list if they have been on it before
       data.value = data.value.filter((item) => getId(item) !== getId(changedItem));
       return;
@@ -77,13 +77,13 @@ export type UseFindFunc<CustomApplication> = <
   M = ServiceModel<CustomApplication, T>,
 >(
   serviceName: T,
-  params?: Ref<Params>,
+  params?: Ref<Params | undefined | null>,
 ) => UseFind<M>;
 
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
-    params: Ref<Params> = ref({ paginate: false, query: {} }),
+    params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
     { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
@@ -95,6 +95,12 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const find = async () => {
       isLoading.value = true;
+      if (!params.value) {
+        data.value = [];
+        isLoading.value = false;
+        return;
+      }
+
       // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
       // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
       const res = await (service as unknown as ServiceMethods<M>).find(params.value);
@@ -102,12 +108,9 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = false;
     };
 
-    watch(
-      () => params.value.query,
-      () => {
-        void find();
-      },
-    );
+    watch(params, () => {
+      void find();
+    });
 
     const connectListener = () => {
       void find();
