@@ -84,6 +84,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = true;
       if (!_id.value) {
         data.value = undefined;
+        isLoading.value = false;
         return;
       }
       // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is

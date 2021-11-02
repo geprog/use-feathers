@@ -179,7 +179,7 @@ describe('Get composition', () => {
   });
 
   it('should un-load data after id changes to undefined', async () => {
-    expect.assertions(4);
+    expect.assertions(5);
 
     // given
     const testModelId = ref<TestModel['_id'] | undefined>(testModel._id);
@@ -215,10 +215,11 @@ describe('Get composition', () => {
     // then
     expect(serviceGet).toHaveBeenCalledTimes(1);
     expect(getComposition).toBeTruthy();
+    expect(getComposition && getComposition.isLoading.value).toBeFalsy();
     expect(getComposition && getComposition.data.value).toBeUndefined();
   });
 
-  it('should indicate loading when id is undefined and load data after changing to a valid id', async () => {
+  it('should return undefined when id is undefined and load data after changing to a valid id', async () => {
     expect.assertions(5);
 
     // given
@@ -246,7 +247,7 @@ describe('Get composition', () => {
 
     // before then to ensure that the previous loading procedure is completed
     await nextTick();
-    expect(getComposition && getComposition.isLoading).toBeTruthy();
+    expect(getComposition && getComposition.isLoading.value).toBeFalsy();
     expect(getComposition && getComposition.data.value).toBeUndefined();
 
     // when
