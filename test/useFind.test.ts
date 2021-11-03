@@ -544,14 +544,14 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toContainEqual(testModel);
     });
 
-    it('should listen to "patch" & "update" events and remove item from list when query is not matching anymore', () => {
-      expect.assertions(2);
+    it('should listen to "patch" & "update" events and remove item from list when query is not matching anymore', async () => {
+      expect.assertions(4);
 
       // given
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: jest.fn(() => [testModel]),
           on: emitter.on,
           off: jest.fn(),
         }),
@@ -563,6 +563,11 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels', ref({ query: { category: testModel.category } }));
       });
+
+      // before then to ensure that the previous loading procedure is completed
+      await nextTick();
+      expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+      expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
 
       // when
       emitter.emit('updated', changedTestModel);
