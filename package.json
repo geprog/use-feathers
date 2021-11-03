@@ -23,7 +23,7 @@
     "lint": "eslint --max-warnings 0 .",
     "lint:format": "prettier --check .",
     "start": "yarn build --watch",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
+    "test": "jest --forceExit --detectOpenHandles --testLocationInResults --json --outputFile=report.json",
     "test:watch": "yarn test --watch",
     "typecheck": "tsc --noEmit",
     "release": "semantic-release"
@@ -40,7 +40,6 @@
     "@types/jest": "26.0.23",
     "@types/node": "15.12.4",
     "@vue/test-utils": "2.0.0-rc.16",
-    "esbuild": "0.12.9",
     "eslint": "7.29.0",
     "jest": "27.3.1",
     "prettier": "2.3.1",
