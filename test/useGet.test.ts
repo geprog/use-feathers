@@ -537,7 +537,7 @@ describe('Get composition', () => {
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
       const wrapper = mountComposition(() => {
-        getComposition = useGet('testModels', ref(testModel._id), { disableUnloadingEventHandlers: true });
+        getComposition = useGet('testModels', ref(testModel._id), ref(), { disableUnloadingEventHandlers: true });
       });
 
       // when

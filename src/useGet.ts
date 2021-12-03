@@ -1,4 +1,4 @@
-import type { Application, FeathersService, Id, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Id, Params, ServiceMethods } from '@feathersjs/feathers';
 import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
@@ -71,6 +71,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     _id: Ref<Id | undefined | null>,
+    params: Ref<Params | undefined> = ref(),
     { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseGet<M> => {
     const data = ref<M>();
@@ -89,7 +90,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       }
       // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
       // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-      data.value = await (service as unknown as ServiceMethods<M>).get(_id.value);
+      data.value = await (service as unknown as ServiceMethods<M>).get(_id.value, params.value);
       isLoading.value = false;
     };
 
