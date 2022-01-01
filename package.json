@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@feathersjs/adapter-commons": "5.0.0-pre.14",
-    "@feathersjs/feathers": "5.0.0-pre.14",
+    "@feathersjs/feathers": "5.0.0-pre.15",
     "@geprog/eslint-config": "0.0.1",
     "@geprog/semantic-release-config": "1.0.0",
     "@jest/types": "27.2.5",
