@@ -1,5 +1,5 @@
 import type { Application, FeathersService, Id, Params, ServiceMethods } from '@feathersjs/feathers';
-import { getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
+import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
 
@@ -98,7 +98,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     const load = () => {
       void get();
     };
-    
+
     const unload = () => {
       unloadEventHandlers();
       feathers.off('connect', load);
@@ -112,5 +112,5 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       onBeforeUnmount(unload);
     }
 
-    return { isLoading, data };
+    return { isLoading, data, load, unload };
   };

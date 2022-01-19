@@ -1,6 +1,6 @@
 import type { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
-import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
+import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
 
@@ -112,7 +112,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     const load = () => {
       void find();
     };
-    
+
     const unload = () => {
       unloadEventHandlers();
       feathers.off('connect', load);
