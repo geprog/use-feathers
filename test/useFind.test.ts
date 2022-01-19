@@ -606,7 +606,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).not.toContainEqual(testModel);
     });
 
-    it('should unmount the event handlers', () => {
+    it('should unload the event handlers', () => {
       expect.assertions(7);
 
       // given
@@ -640,7 +640,7 @@ describe('Find composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
 
-    it('should not unmount the event handlers when desired', () => {
+    it('should not unload the event handlers when desired', () => {
       expect.assertions(3);
 
       // given
@@ -672,7 +672,7 @@ describe('Find composition', () => {
       expect(serviceOff).not.toHaveBeenCalled();
     });
 
-    it('should unmount the event handlers when desired', () => {
+    it('should unload the event handlers when desired', () => {
       expect.assertions(3);
 
       // given
