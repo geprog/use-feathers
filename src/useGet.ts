@@ -73,6 +73,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     serviceName: T,
     _id: Ref<Id | undefined | null>,
     params: Ref<Params | undefined> = ref(),
+    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseGet<M> => {
     const data = ref<M>();
     const isLoading = ref(false);
@@ -106,8 +107,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     watch(_id, load, { immediate: true });
     feathers.on('connect', load);
 
-    // check if composition was called from inside a component setup function
-    if (getCurrentInstance()) {
+    if (disableUnloadingEventHandlers === false && getCurrentInstance()) {
       onBeforeUnmount(unload);
     }
 

@@ -640,6 +640,38 @@ describe('Find composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
 
+    it('should not unmount the event handlers when desired', () => {
+      expect.assertions(3);
+
+      // given
+      const serviceOff = jest.fn();
+      const feathersOff = jest.fn();
+      const feathersMock = {
+        service: () => ({
+          find: jest.fn(),
+          on: jest.fn(),
+          off: serviceOff,
+        }),
+        on: jest.fn(),
+        off: feathersOff,
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      const wrapper = mountComposition(() => {
+        findComposition = useFind('testModels', ref({ paginate: false, query: {} }), {
+          disableUnloadingEventHandlers: true,
+        });
+      });
+
+      // when
+      wrapper.unmount();
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(feathersOff).not.toHaveBeenCalled();
+      expect(serviceOff).not.toHaveBeenCalled();
+    });
+
     it('should unmount the event handlers when desired', () => {
       expect.assertions(3);
 

@@ -85,6 +85,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
+    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
@@ -120,8 +121,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     watch(params, load, { immediate: true });
     feathers.on('connect', load);
 
-    // check if composition was called from inside a component setup function
-    if (getCurrentInstance()) {
+    if (disableUnloadingEventHandlers === false && getCurrentInstance()) {
       onBeforeUnmount(unload);
     }
 
