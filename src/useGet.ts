@@ -56,7 +56,6 @@ function loadServiceEventHandlers<
 export type UseGet<T> = {
   data: Ref<T | undefined>;
   isLoading: Ref<boolean>;
-  load: () => void;
   unload: () => void;
 };
 
@@ -112,5 +111,5 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       onBeforeUnmount(unload);
     }
 
-    return { isLoading, data, load, unload };
+    return { isLoading, data, unload };
   };

@@ -69,7 +69,6 @@ function loadServiceEventHandlers<
 export type UseFind<T> = {
   data: Ref<T[]>;
   isLoading: Ref<boolean>;
-  load: () => void;
   unload: () => void;
 };
 
@@ -126,5 +125,5 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       onBeforeUnmount(unload);
     }
 
-    return { data, isLoading, load, unload };
+    return { data, isLoading, unload };
   };
