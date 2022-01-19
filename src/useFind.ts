@@ -84,7 +84,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
-    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
+    { disableComponentEventHandlers } = { disableComponentEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
@@ -112,22 +112,21 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       void find();
     });
 
-    const connectListener = () => {
+    const load = () => {
       void find();
+    };
+    
+    const unload = () => {
+      unloadEventHandlers();
+      feathers.off('connect', connectListener);
     };
 
     feathers.on('connect', connectListener);
 
-    onMounted(async () => {
-      await find();
-    });
-
-    if (!disableUnloadingEventHandlers) {
-      onBeforeUnmount(() => {
-        unloadEventHandlers();
-        feathers.off('connect', connectListener);
-      });
+    if (!disableComponentEventHandlers) {
+      onMounted(load);      
+      onBeforeUnmount(unload);
     }
 
-    return { data, isLoading };
+    return { data, isLoading, load, unload };
   };
