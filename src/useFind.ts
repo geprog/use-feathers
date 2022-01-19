@@ -69,6 +69,8 @@ function loadServiceEventHandlers<
 export type UseFind<T> = {
   data: Ref<T[]>;
   isLoading: Ref<boolean>;
+  load: () => void;
+  unload: () => void;
 };
 
 // TODO: workaround, since extracting the type with ReturnType<T> does not work for generic functions. See https://stackoverflow.com/a/52964723
@@ -84,7 +86,6 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
-    { disableComponentEventHandlers } = { disableComponentEventHandlers: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
@@ -108,23 +109,20 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = false;
     };
 
-    watch(params, () => {
-      void find();
-    });
-
     const load = () => {
       void find();
     };
     
     const unload = () => {
       unloadEventHandlers();
-      feathers.off('connect', connectListener);
+      feathers.off('connect', load);
     };
 
-    feathers.on('connect', connectListener);
+    watch(params, load, { immediate: true });
+    feathers.on('connect', load);
 
-    if (!disableComponentEventHandlers) {
-      onMounted(load);      
+    // check if composition was called from inside a component setup function
+    if (getCurrentInstance()) {
       onBeforeUnmount(unload);
     }
 

@@ -1,5 +1,5 @@
 import type { Application, FeathersService, Id, Params, ServiceMethods } from '@feathersjs/feathers';
-import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
+import { getCurrentInstance, onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
 
@@ -56,6 +56,8 @@ function loadServiceEventHandlers<
 export type UseGet<T> = {
   data: Ref<T | undefined>;
   isLoading: Ref<boolean>;
+  load: () => void;
+  unload: () => void;
 };
 
 // TODO: workaround, since extracting the type with ReturnType<T> does not work for generic functions. See https://stackoverflow.com/a/52964723
@@ -72,7 +74,6 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     serviceName: T,
     _id: Ref<Id | undefined | null>,
     params: Ref<Params | undefined> = ref(),
-    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
   ): UseGet<M> => {
     const data = ref<M>();
     const isLoading = ref(false);
@@ -94,25 +95,21 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = false;
     };
 
-    watch(_id, async () => {
-      await get();
-    });
-
-    const connectListener = () => {
+    const load = () => {
       void get();
     };
+    
+    const unload = () => {
+      unloadEventHandlers();
+      feathers.off('connect', load);
+    };
 
-    feathers.on('connect', connectListener);
+    watch(_id, load, { immediate: true });
+    feathers.on('connect', load);
 
-    onMounted(async () => {
-      await get();
-    });
-
-    if (!disableUnloadingEventHandlers) {
-      onBeforeUnmount(() => {
-        unloadEventHandlers();
-        feathers.off('connect', connectListener);
-      });
+    // check if composition was called from inside a component setup function
+    if (getCurrentInstance()) {
+      onBeforeUnmount(unload);
     }
 
     return { isLoading, data };
