@@ -606,7 +606,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).not.toContainEqual(testModel);
     });
 
-    it('should unmount the event handlers', () => {
+    it('should unload the event handlers', () => {
       expect.assertions(7);
 
       // given
@@ -640,7 +640,7 @@ describe('Find composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
 
-    it('should not unmount the event handlers when desired', () => {
+    it('should not unload the event handlers when desired', () => {
       expect.assertions(3);
 
       // given
@@ -670,6 +670,33 @@ describe('Find composition', () => {
       expect(findComposition).toBeTruthy();
       expect(feathersOff).not.toHaveBeenCalled();
       expect(serviceOff).not.toHaveBeenCalled();
+    });
+
+    it('should unload the event handlers when desired', () => {
+      expect.assertions(3);
+
+      // given
+      const serviceOff = jest.fn();
+      const feathersOff = jest.fn();
+      const feathersMock = {
+        service: () => ({
+          find: jest.fn(),
+          on: jest.fn(),
+          off: serviceOff,
+        }),
+        on: jest.fn(),
+        off: feathersOff,
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      const findComposition = useFind('testModels', ref({ paginate: false, query: {} }));
+
+      // when
+      findComposition.unload();
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(feathersOff).toHaveBeenCalledTimes(1);
+      expect(serviceOff).toHaveBeenCalledTimes(4); // unload of: created, updated, patched, removed events
     });
   });
 });

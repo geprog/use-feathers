@@ -1,5 +1,5 @@
 import type { Application, FeathersService, Id, Params, ServiceMethods } from '@feathersjs/feathers';
-import { onBeforeUnmount, onMounted, Ref, ref, watch } from 'vue';
+import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
 import { getId, ServiceModel, ServiceTypes } from './utils';
 
@@ -56,6 +56,7 @@ function loadServiceEventHandlers<
 export type UseGet<T> = {
   data: Ref<T | undefined>;
   isLoading: Ref<boolean>;
+  unload: () => void;
 };
 
 // TODO: workaround, since extracting the type with ReturnType<T> does not work for generic functions. See https://stackoverflow.com/a/52964723
@@ -94,26 +95,21 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       isLoading.value = false;
     };
 
-    watch(_id, async () => {
-      await get();
-    });
-
-    const connectListener = () => {
+    const load = () => {
       void get();
     };
 
-    feathers.on('connect', connectListener);
+    const unload = () => {
+      unloadEventHandlers();
+      feathers.off('connect', load);
+    };
 
-    onMounted(async () => {
-      await get();
-    });
+    watch(_id, load, { immediate: true });
+    feathers.on('connect', load);
 
-    if (!disableUnloadingEventHandlers) {
-      onBeforeUnmount(() => {
-        unloadEventHandlers();
-        feathers.off('connect', connectListener);
-      });
+    if (disableUnloadingEventHandlers === false && getCurrentInstance()) {
+      onBeforeUnmount(unload);
     }
 
-    return { isLoading, data };
+    return { isLoading, data, unload };
   };

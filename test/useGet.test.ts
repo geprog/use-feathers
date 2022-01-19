@@ -486,7 +486,7 @@ describe('Get composition', () => {
       expect(getComposition && getComposition.data.value).toStrictEqual(testModel);
     });
 
-    it('should unmount the event handlers', () => {
+    it('should unload the event handlers', () => {
       expect.assertions(7);
 
       // given
@@ -519,7 +519,8 @@ describe('Get composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('patched', expect.anything());
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
-    it('should not unmount the event handlers when desired', () => {
+
+    it('should not unload the event handlers when desired', () => {
       expect.assertions(3);
 
       // given
@@ -547,6 +548,33 @@ describe('Get composition', () => {
       expect(getComposition).toBeTruthy();
       expect(feathersOff).not.toHaveBeenCalled();
       expect(serviceOff).not.toHaveBeenCalled();
+    });
+
+    it('should unload the event handlers when desired', () => {
+      expect.assertions(3);
+
+      // given
+      const serviceOff = jest.fn();
+      const feathersOff = jest.fn();
+      const feathersMock = {
+        service: () => ({
+          get: jest.fn(),
+          on: jest.fn(),
+          off: serviceOff,
+        }),
+        on: jest.fn(),
+        off: feathersOff,
+      } as unknown as Application;
+      const useGet = useGetOriginal(feathersMock);
+      const getComposition = useGet('testModels', ref(testModel._id), ref());
+
+      // when
+      getComposition.unload();
+
+      // then
+      expect(getComposition).toBeTruthy();
+      expect(feathersOff).toHaveBeenCalledTimes(1);
+      expect(serviceOff).toHaveBeenCalledTimes(4); // unload of: created, updated, patched, removed events
     });
   });
 });
