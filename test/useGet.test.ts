@@ -519,7 +519,8 @@ describe('Get composition', () => {
       expect(serviceOff).toHaveBeenCalledWith('patched', expect.anything());
       expect(serviceOff).toHaveBeenCalledWith('removed', expect.anything());
     });
-    it('should not unmount the event handlers when desired', () => {
+
+    it('should unmount the event handlers when desired', () => {
       expect.assertions(3);
 
       // given
@@ -535,18 +536,15 @@ describe('Get composition', () => {
         off: feathersOff,
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
-      let getComposition = null as UseGet<TestModel> | null;
-      const wrapper = mountComposition(() => {
-        getComposition = useGet('testModels', ref(testModel._id), ref(), { disableUnloadingEventHandlers: true });
-      });
+      const getComposition = useGet('testModels', ref(testModel._id), ref());
 
       // when
-      wrapper.unmount();
+      getComposition.unload();
 
       // then
       expect(getComposition).toBeTruthy();
-      expect(feathersOff).not.toHaveBeenCalled();
-      expect(serviceOff).not.toHaveBeenCalled();
+      expect(feathersOff).toHaveBeenCalledTimes(1);
+      expect(serviceOff).toHaveBeenCalledTimes(4); // unload of: created, updated, patched, removed events
     });
   });
 });
