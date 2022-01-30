@@ -574,7 +574,7 @@ describe('Find composition', () => {
 
       // then
       expect(findComposition).toBeTruthy();
-      expect(findComposition && findComposition.data.value.length).toStrictEqual(0);
+      expect(findComposition && findComposition.data.value.length).toBe(0);
     });
 
     it('should listen to "remove" events', async () => {
