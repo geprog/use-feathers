@@ -427,6 +427,35 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).not.toContainEqual(additionalTestModel);
     });
 
+    it('should ignore "create" events when item already exists', async () => {
+      expect.assertions(2);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: jest.fn(() => [additionalTestModel]),
+          on: emitter.on,
+          off: jest.fn(),
+        }),
+        on: jest.fn(),
+        off: jest.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels');
+      });
+      await nextTick();
+
+      // when
+      emitter.emit('created', additionalTestModel);
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toHaveLength(1);
+    });
+
     it('should listen to "patch" events', async () => {
       expect.assertions(2);
 
