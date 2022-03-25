@@ -13,13 +13,18 @@ function loadServiceEventHandlers<
   params: Ref<Params | undefined | null>,
   data: Ref<M[]>,
 ): () => void {
-  const onCreated = (item: M): void => {
+  const onCreated = (createdItem: M): void => {
     // ignore items not matching the query or when no params are set
-    if (!params.value || !sift(params.value.query)(item)) {
+    if (!params.value || !sift(params.value.query)(createdItem)) {
       return;
     }
 
-    data.value = [...data.value, item];
+    // ignore items that already exist
+    if (data.value.find((item) => getId(createdItem) === getId(item)) !== undefined) {
+      return;
+    }
+
+    data.value = [...data.value, createdItem];
   };
 
   const onRemoved = (item: M): void => {
