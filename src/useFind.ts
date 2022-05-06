@@ -39,13 +39,19 @@ function loadServiceEventHandlers<
       return;
     }
 
+    let existing = false;
     data.value = data.value.map((item) => {
       if (getId(item) === getId(changedItem)) {
+        existing = true;
         return changedItem;
       }
 
       return item;
     });
+
+    if (!existing) {
+      data.value = [...data.value, changedItem];
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call
