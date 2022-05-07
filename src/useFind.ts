@@ -39,18 +39,11 @@ function loadServiceEventHandlers<
       return;
     }
 
-    let existing = false;
-    data.value = data.value.map((item) => {
-      if (getId(item) === getId(changedItem)) {
-        existing = true;
-        return changedItem;
-      }
-
-      return item;
-    });
-
-    if (!existing) {
+    const itemIndex = data.value.findIndex((item) => getId(item) === getId(changedItem));
+    if (itemIndex === -1) {
       data.value = [...data.value, changedItem];
+    } else {
+      data.value = [...data.value.slice(0, itemIndex), changedItem, ...data.value.slice(itemIndex + 1)];
     }
   };
 
