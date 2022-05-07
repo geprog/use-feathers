@@ -39,13 +39,12 @@ function loadServiceEventHandlers<
       return;
     }
 
-    data.value = data.value.map((item) => {
-      if (getId(item) === getId(changedItem)) {
-        return changedItem;
-      }
-
-      return item;
-    });
+    const itemIndex = data.value.findIndex((item) => getId(item) === getId(changedItem));
+    if (itemIndex === -1) {
+      data.value = [...data.value, changedItem];
+    } else {
+      data.value = [...data.value.slice(0, itemIndex), changedItem, ...data.value.slice(itemIndex + 1)];
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call

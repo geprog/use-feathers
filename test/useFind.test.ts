@@ -514,6 +514,36 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toContainEqual(changedTestModel);
     });
 
+    it('should keep order of items when handling "update" events', async () => {
+      expect.assertions(3);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: jest.fn(() => [additionalTestModel2, testModel, additionalTestModel]),
+          on: emitter.on,
+          off: jest.fn(),
+        }),
+        on: jest.fn(),
+        off: jest.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels');
+      });
+      await nextTick();
+
+      // when
+      emitter.emit('updated', changedTestModel);
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toHaveLength(3);
+      expect(findComposition && findComposition.data.value[1]).toStrictEqual(changedTestModel);
+    });
+
     it('should listen to "patch" & "update" events when query is matching', async () => {
       expect.assertions(2);
 
@@ -604,6 +634,39 @@ describe('Find composition', () => {
       // then
       expect(findComposition).toBeTruthy();
       expect(findComposition && findComposition.data.value.length).toBe(0);
+    });
+
+    it('should listen to "patch" & "update" events and add item from list when query is matching now', async () => {
+      expect.assertions(4);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: jest.fn(() => []),
+          on: emitter.on,
+          off: jest.fn(),
+        }),
+        on: jest.fn(),
+        off: jest.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels', ref({ query: { category: changedTestModel.category } }));
+      });
+
+      // before then to ensure that the previous loading procedure is completed
+      await nextTick();
+      expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+      expect(findComposition && findComposition.data.value.length).toBe(0);
+
+      // when
+      emitter.emit('updated', changedTestModel);
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual([changedTestModel]);
     });
 
     it('should listen to "remove" events', async () => {
