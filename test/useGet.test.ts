@@ -1,3 +1,4 @@
+import { FeathersError, GeneralError } from '@feathersjs/errors';
 import type { Application } from '@feathersjs/feathers';
 import { nextTick, ref } from 'vue';
 
@@ -104,7 +105,7 @@ describe('Get composition', () => {
   });
 
   it('should indicate data finished loading', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     // given
     let serviceGetPromiseResolve: (value: TestModel | PromiseLike<TestModel>) => void = jest.fn();
@@ -129,12 +130,53 @@ describe('Get composition', () => {
       getComposition = useGet('testModels', ref(testModel._id));
     });
 
+    // before when
+    expect(getComposition).toBeTruthy();
+    expect(getComposition && getComposition.isLoading.value).toBeTruthy();
+
     // when
     serviceGetPromiseResolve(testModel);
     await nextTick();
 
     // then
+    expect(getComposition && getComposition.isLoading.value).toBeFalsy();
+  });
+
+  it('should indicate data finished loading even if an error occurred', async () => {
+    expect.assertions(3);
+
+    // given
+    let serviceGetPromiseReject: (reason: FeathersError) => void = jest.fn();
+    const serviceGet = jest.fn(
+      () =>
+        new Promise<TestModel>((resolve, reject) => {
+          serviceGetPromiseReject = reject;
+        }),
+    );
+    const feathersMock = {
+      service: () => ({
+        get: serviceGet,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useGet = useGetOriginal(feathersMock);
+    let getComposition = null as UseGet<TestModel> | null;
+    mountComposition(() => {
+      getComposition = useGet('testModels', ref(testModel._id));
+    });
+
+    // before when
     expect(getComposition).toBeTruthy();
+    expect(getComposition && getComposition.isLoading.value).toBeTruthy();
+
+    // when
+    serviceGetPromiseReject(new GeneralError('test error'));
+    await nextTick();
+
+    // then
     expect(getComposition && getComposition.isLoading.value).toBeFalsy();
   });
 
@@ -258,6 +300,44 @@ describe('Get composition', () => {
     expect(serviceGet).toHaveBeenCalledTimes(1);
     expect(getComposition).toBeTruthy();
     expect(getComposition && getComposition.data.value).toStrictEqual(additionalTestModel);
+  });
+
+  it('should set an error if something failed', async () => {
+    expect.assertions(3);
+
+    // given
+    let serviceGetPromiseReject: (reason: FeathersError) => void = jest.fn();
+    const serviceGet = jest.fn(
+      () =>
+        new Promise<TestModel>((resolve, reject) => {
+          serviceGetPromiseReject = reject;
+        }),
+    );
+    const feathersMock = {
+      service: () => ({
+        get: serviceGet,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useGet = useGetOriginal(feathersMock);
+    let getComposition = null as UseGet<TestModel> | null;
+    mountComposition(() => {
+      getComposition = useGet('testModels', ref(testModel._id));
+    });
+
+    // before when
+    expect(getComposition).toBeTruthy();
+    expect(getComposition && getComposition.error.value).toBeFalsy();
+
+    // when
+    serviceGetPromiseReject(new GeneralError('test error'));
+    await nextTick();
+
+    // then
+    expect(getComposition && getComposition.error.value).toBeTruthy();
   });
 
   describe('Event Handlers', () => {

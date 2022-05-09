@@ -1,3 +1,4 @@
+import type { FeathersError } from '@feathersjs/errors';
 import type { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
 import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
@@ -73,6 +74,7 @@ function loadServiceEventHandlers<
 export type UseFind<T> = {
   data: Ref<T[]>;
   isLoading: Ref<boolean>;
+  error: Ref<FeathersError | undefined>;
   unload: () => void;
 };
 
@@ -94,22 +96,30 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
     const isLoading = ref(false);
+    const error = ref<FeathersError>();
 
     const service = feathers.service(serviceName as string);
     const unloadEventHandlers = loadServiceEventHandlers(service, params, data);
 
     const find = async () => {
       isLoading.value = true;
+      error.value = undefined;
+
       if (!params.value) {
         data.value = [];
         isLoading.value = false;
         return;
       }
 
-      // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
-      // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-      const res = await (service as unknown as ServiceMethods<M>).find(params.value);
-      data.value = Array.isArray(res) ? res : [res];
+      try {
+        // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
+        // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
+        const res = await (service as unknown as ServiceMethods<M>).find(params.value);
+        data.value = Array.isArray(res) ? res : [res];
+      } catch (_error) {
+        error.value = _error as FeathersError;
+      }
+
       isLoading.value = false;
     };
 
@@ -129,5 +139,5 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       onBeforeUnmount(unload);
     }
 
-    return { data, isLoading, unload };
+    return { data, isLoading, unload, error };
   };

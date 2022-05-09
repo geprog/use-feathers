@@ -2,6 +2,7 @@ lockfileVersion: 5.3
 
 specifiers:
   '@feathersjs/adapter-commons': 5.0.0-pre.15
+  '@feathersjs/errors': 5.0.0-pre.15
   '@feathersjs/feathers': 5.0.0-pre.15
   '@geprog/eslint-config': 1.0.2
   '@geprog/semantic-release-config': 1.0.0
@@ -25,6 +26,7 @@ dependencies:
 
 devDependencies:
   '@feathersjs/adapter-commons': 5.0.0-pre.15
+  '@feathersjs/errors': 5.0.0-pre.15
   '@feathersjs/feathers': 5.0.0-pre.15
   '@geprog/eslint-config': 1.0.2_ecf83b2648d3110d9036a9b8069097d8
   '@geprog/semantic-release-config': 1.0.0_semantic-release@19.0.2
@@ -407,6 +409,11 @@ packages:
 
   /@feathersjs/commons/5.0.0-pre.16:
     resolution: {integrity: sha512-sTrOuE50qNRk0AsGaPRh90XxK1nUDib4/gyoqYxFewB5Z0xh2uyEFSppeD0oty+HfPL5XyZVMMzxbH+vUPL39w==}
+    engines: {node: '>= 12'}
+    dev: true
+
+  /@feathersjs/errors/5.0.0-pre.15:
+    resolution: {integrity: sha512-MuNZWN9FI8J2zBx+02fp3UlRxcZwvEaUrshTEiyFiEyb0PPY4m7h53K/0ps0IINimSha03LGwnNf1gxDJWkyDQ==}
     engines: {node: '>= 12'}
     dev: true
 

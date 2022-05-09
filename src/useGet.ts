@@ -1,3 +1,4 @@
+import type { FeathersError } from '@feathersjs/errors';
 import type { Application, FeathersService, Id, Params, ServiceMethods } from '@feathersjs/feathers';
 import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
@@ -56,6 +57,7 @@ function loadServiceEventHandlers<
 export type UseGet<T> = {
   data: Ref<T | undefined>;
   isLoading: Ref<boolean>;
+  error: Ref<FeathersError | undefined>;
   unload: () => void;
 };
 
@@ -77,6 +79,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   ): UseGet<M> => {
     const data = ref<M>();
     const isLoading = ref(false);
+    const error = ref<FeathersError>();
 
     const service = feathers.service(serviceName as string);
 
@@ -84,14 +87,22 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const get = async () => {
       isLoading.value = true;
+      error.value = undefined;
+
       if (!_id.value) {
         data.value = undefined;
         isLoading.value = false;
         return;
       }
-      // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
-      // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-      data.value = await (service as unknown as ServiceMethods<M>).get(_id.value, params.value);
+
+      try {
+        // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
+        // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
+        data.value = await (service as unknown as ServiceMethods<M>).get(_id.value, params.value);
+      } catch (_error) {
+        error.value = _error as FeathersError;
+      }
+
       isLoading.value = false;
     };
 
@@ -111,5 +122,5 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       onBeforeUnmount(unload);
     }
 
-    return { isLoading, data, unload };
+    return { isLoading, data, error, unload };
   };
