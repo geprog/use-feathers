@@ -1,3 +1,4 @@
+import { FeathersError, GeneralError } from '@feathersjs/errors';
 import type { Application, Params } from '@feathersjs/feathers';
 import { nextTick, ref } from 'vue';
 
@@ -107,7 +108,7 @@ describe('Find composition', () => {
   });
 
   it('should indicate data finished loading', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     // given
     let serviceFindPromiseResolve: (value: TestModel[] | PromiseLike<TestModel[]>) => void = jest.fn();
@@ -132,12 +133,53 @@ describe('Find composition', () => {
       findComposition = useFind('testModels');
     });
 
+    // before when
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeTruthy();
+
     // when
     serviceFindPromiseResolve(testModels);
     await nextTick();
 
     // then
+    expect(findComposition && findComposition.isLoading.value).toBeFalsy();
+  });
+
+  it('should indicate data finished loading even if an error occurred', async () => {
+    expect.assertions(3);
+
+    // given
+    let serviceFindPromiseReject: (reason: FeathersError) => void = jest.fn();
+    const serviceFind = jest.fn(
+      () =>
+        new Promise<TestModel[]>((resolve, reject) => {
+          serviceFindPromiseReject = reject;
+        }),
+    );
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels');
+    });
+
+    // before when
     expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.isLoading.value).toBeTruthy();
+
+    // when
+    serviceFindPromiseReject(new GeneralError('test error'));
+    await nextTick();
+
+    // then
     expect(findComposition && findComposition.isLoading.value).toBeFalsy();
   });
 
@@ -339,6 +381,44 @@ describe('Find composition', () => {
     expect(findComposition).toBeTruthy();
     expect(findComposition && findComposition.isLoading.value).toBeFalsy();
     expect(findComposition && findComposition.data.value).toStrictEqual([additionalTestModel]);
+  });
+
+  it('should set an error if something failed', async () => {
+    expect.assertions(3);
+
+    // given
+    let serviceFindPromiseReject: (reason: FeathersError) => void = jest.fn();
+    const serviceFind = jest.fn(
+      () =>
+        new Promise<TestModel[]>((resolve, reject) => {
+          serviceFindPromiseReject = reject;
+        }),
+    );
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: jest.fn(),
+        off: jest.fn(),
+      }),
+      on: jest.fn(),
+      off: jest.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels');
+    });
+
+    // before when
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.error.value).toBeFalsy();
+
+    // when
+    serviceFindPromiseReject(new GeneralError('test error'));
+    await nextTick();
+
+    // then
+    expect(findComposition && findComposition.error.value).toBeTruthy();
   });
 
   describe('Event Handlers', () => {
