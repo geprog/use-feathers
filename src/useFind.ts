@@ -16,7 +16,7 @@ function loadServiceEventHandlers<
 ): () => void {
   const onCreated = (createdItem: M): void => {
     // ignore items not matching the query or when no params are set
-    if (!params.value || !sift(params.value.query)(createdItem)) {
+    if (!params.value || (params.value.query !== undefined && !sift(params.value.query)(createdItem))) {
       return;
     }
 
@@ -34,7 +34,7 @@ function loadServiceEventHandlers<
 
   const onItemChanged = (changedItem: M): void => {
     // ignore items not matching the query or when no params are set
-    if (!params.value || !sift(params.value.query)(changedItem)) {
+    if (!params.value || (params.value.query !== undefined && !sift(params.value.query)(changedItem))) {
       // remove item from the list if they have been on it before
       data.value = data.value.filter((item) => getId(item) !== getId(changedItem));
       return;
