@@ -1,5 +1,7 @@
 import { FeathersError, GeneralError } from '@feathersjs/errors';
 import type { Application } from '@feathersjs/feathers';
+import { flushPromises } from '@vue/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 
 import useGetOriginal, { UseGet } from '~/useGet';
@@ -13,23 +15,23 @@ const changedTestModel: TestModel = { ...testModel, mood: '😅', action: '🏋�
 
 describe('Get composition', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
-    jest.resetModules();
+    vi.resetAllMocks();
+    vi.resetModules();
   });
 
   it('should load data on mounted', async () => {
     expect.assertions(3);
 
     // given
-    const serviceGet = jest.fn(() => testModel);
+    const serviceGet = vi.fn(() => testModel);
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
 
@@ -50,16 +52,16 @@ describe('Get composition', () => {
     expect.assertions(3);
 
     // given
-    const serviceGet = jest.fn(() => testModel);
+    const serviceGet = vi.fn(() => testModel);
     const emitter = eventHelper();
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
       on: emitter.on,
-      off: jest.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -84,12 +86,12 @@ describe('Get composition', () => {
     // given
     const feathersMock = {
       service: () => ({
-        get: jest.fn(() => new Promise(() => null)),
-        on: jest.fn(),
-        off: jest.fn(),
+        get: vi.fn(() => new Promise(() => null)),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -108,8 +110,8 @@ describe('Get composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceGetPromiseResolve: (value: TestModel | PromiseLike<TestModel>) => void = jest.fn();
-    const serviceGet = jest.fn(
+    let serviceGetPromiseResolve: (value: TestModel | PromiseLike<TestModel>) => void = vi.fn();
+    const serviceGet = vi.fn(
       () =>
         new Promise<TestModel>((resolve) => {
           serviceGetPromiseResolve = resolve;
@@ -118,11 +120,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -136,7 +138,7 @@ describe('Get composition', () => {
 
     // when
     serviceGetPromiseResolve(testModel);
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(getComposition && getComposition.isLoading.value).toBeFalsy();
@@ -146,8 +148,8 @@ describe('Get composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceGetPromiseReject: (reason: FeathersError) => void = jest.fn();
-    const serviceGet = jest.fn(
+    let serviceGetPromiseReject: (reason: FeathersError) => void = vi.fn();
+    const serviceGet = vi.fn(
       () =>
         new Promise<TestModel>((resolve, reject) => {
           serviceGetPromiseReject = reject;
@@ -156,11 +158,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -174,7 +176,7 @@ describe('Get composition', () => {
 
     // when
     serviceGetPromiseReject(new GeneralError('test error'));
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(getComposition && getComposition.isLoading.value).toBeFalsy();
@@ -185,7 +187,7 @@ describe('Get composition', () => {
 
     // given
     const testModelId = ref(testModel._id);
-    const serviceGet = jest.fn((id) => {
+    const serviceGet = vi.fn((id) => {
       if (id === testModel._id) {
         return testModel;
       }
@@ -194,11 +196,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -225,7 +227,7 @@ describe('Get composition', () => {
 
     // given
     const testModelId = ref<TestModel['_id'] | undefined>(testModel._id);
-    const serviceGet = jest.fn((id) => {
+    const serviceGet = vi.fn((id) => {
       if (id === testModel._id) {
         return testModel;
       }
@@ -234,11 +236,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -266,7 +268,7 @@ describe('Get composition', () => {
 
     // given
     const testModelId = ref<string | undefined>(undefined);
-    const serviceGet = jest.fn((id) => {
+    const serviceGet = vi.fn((id) => {
       if (id === testModel._id) {
         return testModel;
       }
@@ -275,11 +277,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -306,8 +308,8 @@ describe('Get composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceGetPromiseReject: (reason: FeathersError) => void = jest.fn();
-    const serviceGet = jest.fn(
+    let serviceGetPromiseReject: (reason: FeathersError) => void = vi.fn();
+    const serviceGet = vi.fn(
       () =>
         new Promise<TestModel>((resolve, reject) => {
           serviceGetPromiseReject = reject;
@@ -316,11 +318,11 @@ describe('Get composition', () => {
     const feathersMock = {
       service: () => ({
         get: serviceGet,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useGet = useGetOriginal(feathersMock);
     let getComposition = null as UseGet<TestModel> | null;
@@ -334,7 +336,7 @@ describe('Get composition', () => {
 
     // when
     serviceGetPromiseReject(new GeneralError('test error'));
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(getComposition && getComposition.error.value).toBeTruthy();
@@ -348,12 +350,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(),
+          get: vi.fn(),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -380,12 +382,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(),
+          get: vi.fn(),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -412,12 +414,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(() => testModel),
+          get: vi.fn(() => testModel),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -444,12 +446,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(() => testModel),
+          get: vi.fn(() => testModel),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -476,12 +478,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(() => testModel),
+          get: vi.fn(() => testModel),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -509,12 +511,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(() => testModel),
+          get: vi.fn(() => testModel),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -541,12 +543,12 @@ describe('Get composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(() => testModel),
+          get: vi.fn(() => testModel),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
       let getComposition = null as UseGet<TestModel> | null;
@@ -570,15 +572,15 @@ describe('Get composition', () => {
       expect.assertions(7);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(),
-          on: jest.fn(),
+          get: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
@@ -604,15 +606,15 @@ describe('Get composition', () => {
       expect.assertions(3);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(),
-          on: jest.fn(),
+          get: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
@@ -634,15 +636,15 @@ describe('Get composition', () => {
       expect.assertions(3);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          get: jest.fn(),
-          on: jest.fn(),
+          get: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useGet = useGetOriginal(feathersMock);
