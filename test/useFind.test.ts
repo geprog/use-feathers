@@ -1,5 +1,7 @@
 import { FeathersError, GeneralError } from '@feathersjs/errors';
 import type { Application, Params } from '@feathersjs/feathers';
+import { flushPromises } from '@vue/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
 
 import useFindOriginal, { UseFind } from '~/useFind';
@@ -15,24 +17,24 @@ const testModels: TestModel[] = [testModel, additionalTestModel2];
 
 describe('Find composition', () => {
   beforeEach(() => {
-    jest.resetAllMocks();
-    jest.resetModules();
+    vi.resetAllMocks();
+    vi.resetModules();
   });
 
   it('should load data on mounted', async () => {
     expect.assertions(3);
 
     // given
-    const serviceFind = jest.fn(() => testModels);
+    const serviceFind = vi.fn(() => testModels);
 
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
 
@@ -53,16 +55,16 @@ describe('Find composition', () => {
     expect.assertions(3);
 
     // given
-    const serviceFind = jest.fn(() => testModels);
+    const serviceFind = vi.fn(() => testModels);
     const emitter = eventHelper();
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
       on: emitter.on,
-      off: jest.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -87,12 +89,12 @@ describe('Find composition', () => {
     // given
     const feathersMock = {
       service: () => ({
-        find: jest.fn(() => new Promise(() => null)),
-        on: jest.fn(),
-        off: jest.fn(),
+        find: vi.fn(() => new Promise(() => null)),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -111,8 +113,8 @@ describe('Find composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceFindPromiseResolve: (value: TestModel[] | PromiseLike<TestModel[]>) => void = jest.fn();
-    const serviceFind = jest.fn(
+    let serviceFindPromiseResolve: (value: TestModel[] | PromiseLike<TestModel[]>) => void = vi.fn();
+    const serviceFind = vi.fn(
       () =>
         new Promise<TestModel[]>((resolve) => {
           serviceFindPromiseResolve = resolve;
@@ -121,11 +123,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -139,7 +141,7 @@ describe('Find composition', () => {
 
     // when
     serviceFindPromiseResolve(testModels);
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(findComposition && findComposition.isLoading.value).toBeFalsy();
@@ -149,8 +151,8 @@ describe('Find composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceFindPromiseReject: (reason: FeathersError) => void = jest.fn();
-    const serviceFind = jest.fn(
+    let serviceFindPromiseReject: (reason: FeathersError) => void = vi.fn();
+    const serviceFind = vi.fn(
       () =>
         new Promise<TestModel[]>((resolve, reject) => {
           serviceFindPromiseReject = reject;
@@ -159,11 +161,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -177,7 +179,7 @@ describe('Find composition', () => {
 
     // when
     serviceFindPromiseReject(new GeneralError('test error'));
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(findComposition && findComposition.isLoading.value).toBeFalsy();
@@ -188,7 +190,7 @@ describe('Find composition', () => {
 
     // given
     const findParams = ref({ query: { zug: 'start' } });
-    const serviceFind = jest.fn((params: Params) => {
+    const serviceFind = vi.fn((params: Params) => {
       if (params.query && params.query.zug === 'start') {
         return [additionalTestModel];
       }
@@ -197,11 +199,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -232,15 +234,15 @@ describe('Find composition', () => {
 
     // given
     const findParams = ref<Params | undefined>({ query: { zug: 'start' } });
-    const serviceFind = jest.fn(() => Promise.resolve([testModel]));
+    const serviceFind = vi.fn(() => Promise.resolve([testModel]));
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -249,7 +251,7 @@ describe('Find composition', () => {
     });
 
     // before then to ensure that the previous loading procedure is completed
-    await nextTick();
+    await flushPromises();
     expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
 
     // when
@@ -268,15 +270,15 @@ describe('Find composition', () => {
 
     // given
     const findParams = ref<Params | null>({ query: { zug: 'start' } });
-    const serviceFind = jest.fn(() => Promise.resolve([testModel]));
+    const serviceFind = vi.fn(() => Promise.resolve([testModel]));
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -285,7 +287,7 @@ describe('Find composition', () => {
     });
 
     // before then to ensure that the previous loading procedure is completed
-    await nextTick();
+    await flushPromises();
     expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
 
     // when
@@ -304,7 +306,7 @@ describe('Find composition', () => {
 
     // given
     const findParams = ref<Params | undefined>();
-    const serviceFind = jest.fn((params: Params) => {
+    const serviceFind = vi.fn((params: Params) => {
       if (params.query && params.query.zug === 'start') {
         return [additionalTestModel];
       }
@@ -313,11 +315,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -346,7 +348,7 @@ describe('Find composition', () => {
 
     // given
     const findParams = ref<Params | null>(null);
-    const serviceFind = jest.fn((params: Params) => {
+    const serviceFind = vi.fn((params: Params) => {
       if (params.query && params.query.zug === 'start') {
         return [additionalTestModel];
       }
@@ -355,11 +357,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -387,8 +389,8 @@ describe('Find composition', () => {
     expect.assertions(3);
 
     // given
-    let serviceFindPromiseReject: (reason: FeathersError) => void = jest.fn();
-    const serviceFind = jest.fn(
+    let serviceFindPromiseReject: (reason: FeathersError) => void = vi.fn();
+    const serviceFind = vi.fn(
       () =>
         new Promise<TestModel[]>((resolve, reject) => {
           serviceFindPromiseReject = reject;
@@ -397,11 +399,11 @@ describe('Find composition', () => {
     const feathersMock = {
       service: () => ({
         find: serviceFind,
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       }),
-      on: jest.fn(),
-      off: jest.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
     } as unknown as Application;
     const useFind = useFindOriginal(feathersMock);
     let findComposition = null as UseFind<TestModel> | null;
@@ -415,7 +417,7 @@ describe('Find composition', () => {
 
     // when
     serviceFindPromiseReject(new GeneralError('test error'));
-    await nextTick();
+    await flushPromises();
 
     // then
     expect(findComposition && findComposition.error.value).toBeTruthy();
@@ -429,12 +431,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -457,12 +459,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -486,12 +488,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -515,12 +517,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -543,12 +545,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => [additionalTestModel]),
+          find: vi.fn(() => [additionalTestModel]),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -572,12 +574,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: vi.fn(() => testModels),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -601,12 +603,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: vi.fn(() => testModels),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -630,12 +632,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => [additionalTestModel2, testModel, additionalTestModel]),
+          find: vi.fn(() => [additionalTestModel2, testModel, additionalTestModel]),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -660,12 +662,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: vi.fn(() => testModels),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -689,12 +691,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: vi.fn(() => testModels),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -719,12 +721,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => [testModel]),
+          find: vi.fn(() => [testModel]),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -752,12 +754,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -785,12 +787,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => []),
+          find: vi.fn(() => []),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -818,12 +820,12 @@ describe('Find composition', () => {
       const emitter = eventHelper();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(() => testModels),
+          find: vi.fn(() => testModels),
           on: emitter.on,
-          off: jest.fn(),
+          off: vi.fn(),
         }),
-        on: jest.fn(),
-        off: jest.fn(),
+        on: vi.fn(),
+        off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
@@ -844,15 +846,15 @@ describe('Find composition', () => {
       expect.assertions(7);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(),
-          on: jest.fn(),
+          find: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
@@ -878,15 +880,15 @@ describe('Find composition', () => {
       expect.assertions(3);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(),
-          on: jest.fn(),
+          find: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
@@ -910,15 +912,15 @@ describe('Find composition', () => {
       expect.assertions(3);
 
       // given
-      const serviceOff = jest.fn();
-      const feathersOff = jest.fn();
+      const serviceOff = vi.fn();
+      const feathersOff = vi.fn();
       const feathersMock = {
         service: () => ({
-          find: jest.fn(),
-          on: jest.fn(),
+          find: vi.fn(),
+          on: vi.fn(),
           off: serviceOff,
         }),
-        on: jest.fn(),
+        on: vi.fn(),
         off: feathersOff,
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
