@@ -1,6 +1,6 @@
 import { AdapterService } from '@feathersjs/adapter-commons/lib';
 import type { FeathersError } from '@feathersjs/errors';
-import type { Application, FeathersService, Paginated, Params, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Paginated, Params, Query, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
 import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
@@ -117,7 +117,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
       try {
         const originalParams: Params = params.value;
-        const originalQuery = originalParams.query || {};
+        const originalQuery: Query & { $limit?: number } = originalParams.query || {};
         // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
         // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
         const res = await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(originalParams);
@@ -127,10 +127,11 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
         if (isPaginated(res)) {
           let loadedPage: Paginated<M> = res;
           let loadedItemsCount = loadedPage.data.length;
-          const limit = originalQuery.limit || loadedPage.data.length;
+          const limit: number = originalQuery.$limit || loadedPage.data.length;
           data.value = [...loadedPage.data];
           while (!unloaded && loadedPage.total > loadedItemsCount) {
-            const skip = typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
+            const skip: string | number =
+              typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
             const nextParams: Params = {
               ...originalParams,
               paginate: true,
