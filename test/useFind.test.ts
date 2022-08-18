@@ -423,6 +423,36 @@ describe('Find composition', () => {
     expect(findComposition && findComposition.error.value).toBeTruthy();
   });
 
+  it('should also load single entity response', async () => {
+    expect.assertions(3);
+
+    // given
+    const serviceFind = vi.fn(() => testModel);
+
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: vi.fn(),
+        off: vi.fn(),
+      }),
+      on: vi.fn(),
+      off: vi.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+
+    // when
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels');
+    });
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
+  });
+
   describe('Event Handlers', () => {
     it('should listen to "create" events', () => {
       expect.assertions(2);
