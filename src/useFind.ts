@@ -1,9 +1,10 @@
+import { AdapterService } from '@feathersjs/adapter-commons/lib';
 import type { FeathersError } from '@feathersjs/errors';
-import type { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Paginated, Params, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
 import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
-import { getId, ServiceModel, ServiceTypes } from './utils';
+import { getId, isPaginated, ServiceModel, ServiceTypes } from './utils';
 
 function loadServiceEventHandlers<
   CustomApplication extends Application,
@@ -100,8 +101,11 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const service = feathers.service(serviceName as string);
     const unloadEventHandlers = loadServiceEventHandlers(service, params, data);
+    let unloaded = false;
 
-    const find = async () => {
+    const currentFindCall = ref(0);
+
+    const find = async (call: number) => {
       isLoading.value = true;
       error.value = undefined;
 
@@ -114,8 +118,34 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       try {
         // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
         // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-        const res = await (service as unknown as ServiceMethods<M>).find(params.value);
-        data.value = Array.isArray(res) ? res : [res];
+        const res = await (service as unknown as (ServiceMethods<M> | AdapterService<M>)).find(params.value);
+        if (call !== currentFindCall.value) {
+          return;
+        }
+        if (isPaginated(res)) {
+          const originalParams: Params = params.value || {};
+          const originalQuery = originalParams.query || {};
+          let loadedPage: Paginated<M> = res;
+          let loadedItemsCount = loadedPage.data.length;
+          const limit = originalQuery.limit || loadedPage.data.length
+          data.value = [...loadedPage.data];
+          while (!unloaded && loadedPage.total > loadedItemsCount) {
+            const skip = typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
+            const nextParams: Params = {
+              ...originalParams,
+              paginate: true,
+              query: { ...originalQuery, $skip: skip, $limit: limit },
+            };
+            loadedPage = await (service as unknown as (ServiceMethods<M> | AdapterService<M>)).find(nextParams) as Paginated<M>;
+            if (call !== currentFindCall.value) {
+              return;
+            }
+            loadedItemsCount += loadedPage.data.length;
+            data.value = [...data.value, ...loadedPage.data];
+          }
+        } else {
+          data.value = Array.isArray(res) ? res : [res];
+        }
       } catch (_error) {
         error.value = _error as FeathersError;
       }
@@ -124,10 +154,12 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     };
 
     const load = () => {
-      void find();
+      currentFindCall.value = currentFindCall.value + 1;
+      void find(currentFindCall.value);
     };
 
     const unload = () => {
+      unloaded = true;
       unloadEventHandlers();
       feathers.off('connect', load);
     };
