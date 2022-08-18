@@ -118,7 +118,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       try {
         // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
         // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-        const res = await (service as unknown as (ServiceMethods<M> | AdapterService<M>)).find(params.value);
+        const res = await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(params.value);
         if (call !== currentFindCall.value) {
           return;
         }
@@ -127,7 +127,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
           const originalQuery = originalParams.query || {};
           let loadedPage: Paginated<M> = res;
           let loadedItemsCount = loadedPage.data.length;
-          const limit = originalQuery.limit || loadedPage.data.length
+          const limit = originalQuery.limit || loadedPage.data.length;
           data.value = [...loadedPage.data];
           while (!unloaded && loadedPage.total > loadedItemsCount) {
             const skip = typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
@@ -136,7 +136,9 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
               paginate: true,
               query: { ...originalQuery, $skip: skip, $limit: limit },
             };
-            loadedPage = await (service as unknown as (ServiceMethods<M> | AdapterService<M>)).find(nextParams) as Paginated<M>;
+            loadedPage = (await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(
+              nextParams,
+            )) as Paginated<M>;
             if (call !== currentFindCall.value) {
               return;
             }

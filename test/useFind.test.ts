@@ -422,7 +422,7 @@ describe('Find composition', () => {
     // then
     expect(findComposition && findComposition.error.value).toBeTruthy();
   });
-  
+
   describe('Event Handlers', () => {
     it('should listen to "create" events', () => {
       expect.assertions(2);
@@ -939,20 +939,20 @@ describe('Find composition', () => {
   describe('pagination', () => {
     it('should load data with pagination', async () => {
       expect.assertions(3);
-  
+
       // given
       let startItemIndex = 0;
       const serviceFind = vi.fn(() => {
-          const page: Paginated<TestModel> = {
-            total: testModels.length,
-            skip: startItemIndex,
-            limit: 1,
-            data: testModels.slice(startItemIndex, startItemIndex + 1),
-          };
-          startItemIndex++;
-          return page;
+        const page: Paginated<TestModel> = {
+          total: testModels.length,
+          skip: startItemIndex,
+          limit: 1,
+          data: testModels.slice(startItemIndex, startItemIndex + 1),
+        };
+        startItemIndex++;
+        return page;
       });
-  
+
       const feathersMock = {
         service: () => ({
           find: serviceFind,
@@ -963,14 +963,14 @@ describe('Find composition', () => {
         off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
-  
+
       // when
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
       await nextTick();
-  
+
       // then
       expect(serviceFind).toHaveBeenCalledTimes(2);
       expect(findComposition).toBeTruthy();
@@ -979,7 +979,7 @@ describe('Find composition', () => {
 
     it('should also paginate with lastEvaluatedKey patterns (misused $skip for it)', async () => {
       expect.assertions(3);
-  
+
       // given
       const serviceFind = vi.fn((params?: Params) => {
         const startItemIndex = testModels.findIndex(({ _id }) => _id === params?.query?.$skip) + 1;
@@ -992,7 +992,7 @@ describe('Find composition', () => {
         };
         return page;
       });
-  
+
       const feathersMock = {
         service: () => ({
           find: serviceFind,
@@ -1003,14 +1003,14 @@ describe('Find composition', () => {
         off: vi.fn(),
       } as unknown as Application;
       const useFind = useFindOriginal(feathersMock);
-  
+
       // when
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
       await nextTick();
-  
+
       // then
       expect(serviceFind).toHaveBeenCalledTimes(2);
       expect(findComposition).toBeTruthy();
@@ -1019,7 +1019,7 @@ describe('Find composition', () => {
 
     it('should stop further page requests if find was retriggered due to e.g. reactivity', async () => {
       expect.assertions(3);
-  
+
       // given
       let startItemIndex = 0;
       let data = [additionalTestModel, ...testModels];
@@ -1052,12 +1052,12 @@ describe('Find composition', () => {
       serviceFind.mockClear();
       data = testModels;
       startItemIndex = 0;
-  
+
       // when
       emitter.emit('connect');
       await nextTick();
       await nextTick();
-  
+
       // then
       expect(serviceFind).toHaveBeenCalledTimes(2);
       expect(findComposition).toBeTruthy();
