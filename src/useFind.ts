@@ -92,7 +92,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
-    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
+    { disableUnloadingEventHandlers, chunking } = { disableUnloadingEventHandlers: false, chunking: false },
   ): UseFind<M> => {
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
@@ -122,25 +122,28 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
         // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
         const res = await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(originalParams);
         if (call !== currentFindCall.value) {
+          // stop handling response since there already is a new find call running within this composition
           return;
         }
         if (isPaginated(res)) {
+          // extract data from page response
           let loadedPage: Paginated<M> = res;
           let loadedItemsCount = loadedPage.data.length;
-          const limit: number = originalQuery.$limit || loadedPage.data.length;
           data.value = [...loadedPage.data];
-          while (!unloaded && loadedPage.total > loadedItemsCount) {
+          // limit might not be specified in the original query if default pagination from backend is applied, that's why we use this fallback pattern
+          const limit: number = originalQuery.$limit || loadedPage.data.length;
+          // if chunking is enabled we go on requesting all following pages until all data have been received
+          while (chunking && !unloaded && loadedPage.total > loadedItemsCount) {
+            // skip can be a string in cases where key based chunking/pagination is done e.g. in DynamoDb via `LastEvaluatedKey`
             const skip: string | number =
               typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
-            const nextParams: Params = {
+            // request next page
+            loadedPage = (await (service as unknown as ServiceMethods<M> | AdapterService<M>).find({
               ...originalParams,
-              paginate: true,
               query: { ...originalQuery, $skip: skip, $limit: limit },
-            };
-            loadedPage = (await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(
-              nextParams,
-            )) as Paginated<M>;
+            })) as Paginated<M>;
             if (call !== currentFindCall.value) {
+              // stop handling/requesting further pages since there already is a new find call running within this composition
               return;
             }
             loadedItemsCount += loadedPage.data.length;
