@@ -88,12 +88,20 @@ export type UseFindFunc<CustomApplication> = <
   params?: Ref<Params | undefined | null>,
 ) => UseFind<M>;
 
+type Options = {
+  disableUnloadingEventHandlers: boolean;
+  chunking: boolean;
+};
+
+const defaultOptions: Options = { disableUnloadingEventHandlers: false, chunking: false };
+
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
-    { disableUnloadingEventHandlers, chunking } = { disableUnloadingEventHandlers: false, chunking: false },
+    options: Partial<Options> = {},
   ): UseFind<M> => {
+    const { disableUnloadingEventHandlers, chunking } = { ...defaultOptions, ...options };
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
     const isLoading = ref(false);
