@@ -967,7 +967,7 @@ describe('Find composition', () => {
   });
 
   describe('pagination', () => {
-    it('should load data with pagination', async () => {
+    it('should handle paginated data', async () => {
       expect.assertions(3);
 
       // given
@@ -1002,12 +1002,52 @@ describe('Find composition', () => {
       await nextTick();
 
       // then
+      expect(serviceFind).toHaveBeenCalledTimes(1);
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual(testModels.slice(0, 1));
+    });
+
+    it('should load all data with chunking', async () => {
+      expect.assertions(3);
+
+      // given
+      let startItemIndex = 0;
+      const serviceFind = vi.fn(() => {
+        const page: Paginated<TestModel> = {
+          total: testModels.length,
+          skip: startItemIndex,
+          limit: 1,
+          data: testModels.slice(startItemIndex, startItemIndex + 1),
+        };
+        startItemIndex++;
+        return page;
+      });
+
+      const feathersMock = {
+        service: () => ({
+          find: serviceFind,
+          on: vi.fn(),
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+
+      // when
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels', undefined, { chunking: true });
+      });
+      await nextTick();
+
+      // then
       expect(serviceFind).toHaveBeenCalledTimes(2);
       expect(findComposition).toBeTruthy();
       expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
     });
 
-    it('should also paginate with lastEvaluatedKey patterns (misused $skip for it)', async () => {
+    it('should also load chunked data with lastEvaluatedKey patterns (misused $skip for it)', async () => {
       expect.assertions(3);
 
       // given
@@ -1037,7 +1077,7 @@ describe('Find composition', () => {
       // when
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels');
+        findComposition = useFind('testModels', undefined, { chunking: true });
       });
       await nextTick();
 
@@ -1076,7 +1116,7 @@ describe('Find composition', () => {
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels');
+        findComposition = useFind('testModels', undefined, { chunking: true });
       });
       await nextTick();
       serviceFind.mockClear();
