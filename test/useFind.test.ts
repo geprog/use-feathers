@@ -1087,7 +1087,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
     });
 
-    it('should stop further page requests if find was retriggered due to e.g. reactivity', async () => {
+    it('should stop further page requests if find was retriggered due to a change to params or connection reset', async () => {
       expect.assertions(3);
 
       // given
