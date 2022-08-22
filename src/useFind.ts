@@ -90,10 +90,10 @@ export type UseFindFunc<CustomApplication> = <
 
 type Options = {
   disableUnloadingEventHandlers: boolean;
-  chunking: boolean;
+  loadAllPages: boolean;
 };
 
-const defaultOptions: Options = { disableUnloadingEventHandlers: false, chunking: false };
+const defaultOptions: Options = { disableUnloadingEventHandlers: false, loadAllPages: false };
 
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
@@ -101,7 +101,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
     options: Partial<Options> = {},
   ): UseFind<M> => {
-    const { disableUnloadingEventHandlers, chunking } = { ...defaultOptions, ...options };
+    const { disableUnloadingEventHandlers, loadAllPages } = { ...defaultOptions, ...options };
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
     const isLoading = ref(false);
@@ -133,7 +133,11 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
           // stop handling response since there already is a new find call running within this composition
           return;
         }
-        if (isPaginated(res)) {
+        if (isPaginated(res) && !loadAllPages) {
+          data.value = [...res.data];
+        } else if (!isPaginated(res)) {
+          data.value = Array.isArray(res) ? res : [res];
+        } else {
           // extract data from page response
           let loadedPage: Paginated<M> = res;
           let loadedItemsCount = loadedPage.data.length;
@@ -141,7 +145,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
           // limit might not be specified in the original query if default pagination from backend is applied, that's why we use this fallback pattern
           const limit: number = originalQuery.$limit || loadedPage.data.length;
           // if chunking is enabled we go on requesting all following pages until all data have been received
-          while (chunking && !unloaded && loadedPage.total > loadedItemsCount) {
+          while (!unloaded && loadedPage.total > loadedItemsCount) {
             // skip can be a string in cases where key based chunking/pagination is done e.g. in DynamoDb via `LastEvaluatedKey`
             const skip: string | number =
               typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
@@ -157,8 +161,6 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
             loadedItemsCount += loadedPage.data.length;
             data.value = [...data.value, ...loadedPage.data];
           }
-        } else {
-          data.value = Array.isArray(res) ? res : [res];
         }
       } catch (_error) {
         error.value = _error as FeathersError;
