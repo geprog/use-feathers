@@ -1037,7 +1037,7 @@ describe('Find composition', () => {
       // when
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels', undefined, { chunking: true });
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
       });
       await nextTick();
 
@@ -1077,7 +1077,7 @@ describe('Find composition', () => {
       // when
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels', undefined, { chunking: true });
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
       });
       await nextTick();
 
@@ -1116,7 +1116,7 @@ describe('Find composition', () => {
       const useFind = useFindOriginal(feathersMock);
       let findComposition = null as UseFind<TestModel> | null;
       mountComposition(() => {
-        findComposition = useFind('testModels', undefined, { chunking: true });
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
       });
       await nextTick();
       serviceFind.mockClear();
