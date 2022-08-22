@@ -1,5 +1,5 @@
 import type { AdapterService } from '@feathersjs/adapter-commons';
-import type { Application, Id, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, Id, Paginated, ServiceMethods } from '@feathersjs/feathers';
 
 export type PotentialIds = {
   id?: Id;
@@ -29,3 +29,8 @@ export type ServiceModel<
   : ServiceTypes<CustomApplication>[T] extends ServiceMethods<infer M2>
   ? M2
   : never;
+
+export function isPaginated<T>(response: T | T[] | Paginated<T>): response is Paginated<T> {
+  const { total, limit, skip, data } = response as Paginated<T>;
+  return total !== undefined && limit !== undefined && skip !== undefined && data !== undefined && Array.isArray(data);
+}

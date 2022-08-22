@@ -1,5 +1,5 @@
 import { FeathersError, GeneralError } from '@feathersjs/errors';
-import type { Application, Params } from '@feathersjs/feathers';
+import type { Application, Paginated, Params } from '@feathersjs/feathers';
 import { flushPromises } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick, ref } from 'vue';
@@ -421,6 +421,36 @@ describe('Find composition', () => {
 
     // then
     expect(findComposition && findComposition.error.value).toBeTruthy();
+  });
+
+  it('should load single entity response', async () => {
+    expect.assertions(3);
+
+    // given
+    const serviceFind = vi.fn(() => testModel);
+
+    const feathersMock = {
+      service: () => ({
+        find: serviceFind,
+        on: vi.fn(),
+        off: vi.fn(),
+      }),
+      on: vi.fn(),
+      off: vi.fn(),
+    } as unknown as Application;
+    const useFind = useFindOriginal(feathersMock);
+
+    // when
+    let findComposition = null as UseFind<TestModel> | null;
+    mountComposition(() => {
+      findComposition = useFind('testModels');
+    });
+    await nextTick();
+
+    // then
+    expect(serviceFind).toHaveBeenCalledTimes(1);
+    expect(findComposition).toBeTruthy();
+    expect(findComposition && findComposition.data.value).toStrictEqual([testModel]);
   });
 
   describe('Event Handlers', () => {
@@ -933,6 +963,175 @@ describe('Find composition', () => {
       expect(findComposition).toBeTruthy();
       expect(feathersOff).toHaveBeenCalledTimes(1);
       expect(serviceOff).toHaveBeenCalledTimes(4); // unload of: created, updated, patched, removed events
+    });
+  });
+
+  describe('pagination', () => {
+    it('should handle paginated data', async () => {
+      expect.assertions(3);
+
+      // given
+      let startItemIndex = 0;
+      const serviceFind = vi.fn(() => {
+        const page: Paginated<TestModel> = {
+          total: testModels.length,
+          skip: startItemIndex,
+          limit: 1,
+          data: testModels.slice(startItemIndex, startItemIndex + 1),
+        };
+        startItemIndex++;
+        return page;
+      });
+
+      const feathersMock = {
+        service: () => ({
+          find: serviceFind,
+          on: vi.fn(),
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+
+      // when
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels');
+      });
+      await nextTick();
+
+      // then
+      expect(serviceFind).toHaveBeenCalledTimes(1);
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual(testModels.slice(0, 1));
+    });
+
+    it('should load all data with chunking', async () => {
+      expect.assertions(3);
+
+      // given
+      let startItemIndex = 0;
+      const serviceFind = vi.fn(() => {
+        const page: Paginated<TestModel> = {
+          total: testModels.length,
+          skip: startItemIndex,
+          limit: 1,
+          data: testModels.slice(startItemIndex, startItemIndex + 1),
+        };
+        startItemIndex++;
+        return page;
+      });
+
+      const feathersMock = {
+        service: () => ({
+          find: serviceFind,
+          on: vi.fn(),
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+
+      // when
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
+      });
+      await nextTick();
+
+      // then
+      expect(serviceFind).toHaveBeenCalledTimes(2);
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
+    });
+
+    it('should load data with pagination using lastEvaluatedKey patterns', async () => {
+      expect.assertions(3);
+
+      // given
+      const serviceFind = vi.fn((params?: Params) => {
+        const startItemIndex = testModels.findIndex(({ _id }) => _id === params?.query?.$skip) + 1;
+        const data = testModels.slice(startItemIndex, startItemIndex + 1);
+        const page: Paginated<TestModel> = {
+          total: testModels.length,
+          skip: data[data.length - 1]._id as unknown as number,
+          limit: 1,
+          data,
+        };
+        return page;
+      });
+
+      const feathersMock = {
+        service: () => ({
+          find: serviceFind,
+          on: vi.fn(),
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+
+      // when
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
+      });
+      await nextTick();
+
+      // then
+      expect(serviceFind).toHaveBeenCalledTimes(2);
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
+    });
+
+    it('should stop further page requests if find was retriggered due to a change to params or connection reset', async () => {
+      expect.assertions(3);
+
+      // given
+      let startItemIndex = 0;
+      let data = [additionalTestModel, ...testModels];
+      const serviceFind = vi.fn(() => {
+        const page: Paginated<TestModel> = {
+          total: data.length,
+          skip: startItemIndex,
+          limit: 1,
+          data: data.slice(startItemIndex, startItemIndex + 1),
+        };
+        startItemIndex++;
+        return page;
+      });
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: serviceFind,
+          on: vi.fn(),
+          off: vi.fn(),
+        }),
+        on: emitter.on,
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels', undefined, { loadAllPages: true });
+      });
+      await nextTick();
+      serviceFind.mockClear();
+      data = testModels;
+      startItemIndex = 0;
+
+      // when
+      emitter.emit('connect');
+      await nextTick();
+      await nextTick();
+
+      // then
+      expect(serviceFind).toHaveBeenCalledTimes(2);
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
     });
   });
 });

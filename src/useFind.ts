@@ -1,9 +1,10 @@
+import { AdapterService } from '@feathersjs/adapter-commons/lib';
 import type { FeathersError } from '@feathersjs/errors';
-import type { Application, FeathersService, Params, ServiceMethods } from '@feathersjs/feathers';
+import type { Application, FeathersService, Paginated, Params, Query, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
 import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
-import { getId, ServiceModel, ServiceTypes } from './utils';
+import { getId, isPaginated, ServiceModel, ServiceTypes } from './utils';
 
 function loadServiceEventHandlers<
   CustomApplication extends Application,
@@ -87,12 +88,20 @@ export type UseFindFunc<CustomApplication> = <
   params?: Ref<Params | undefined | null>,
 ) => UseFind<M>;
 
+type Options = {
+  disableUnloadingEventHandlers: boolean;
+  loadAllPages: boolean;
+};
+
+const defaultOptions: Options = { disableUnloadingEventHandlers: false, loadAllPages: false };
+
 export default <CustomApplication extends Application>(feathers: CustomApplication) =>
   <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
     serviceName: T,
     params: Ref<Params | undefined | null> = ref({ paginate: false, query: {} }),
-    { disableUnloadingEventHandlers } = { disableUnloadingEventHandlers: false },
+    options: Partial<Options> = {},
   ): UseFind<M> => {
+    const { disableUnloadingEventHandlers, loadAllPages } = { ...defaultOptions, ...options };
     // type cast is fine here (source: https://github.com/vuejs/vue-next/issues/2136#issuecomment-693524663)
     const data = ref<M[]>([]) as Ref<M[]>;
     const isLoading = ref(false);
@@ -100,8 +109,11 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
 
     const service = feathers.service(serviceName as string);
     const unloadEventHandlers = loadServiceEventHandlers(service, params, data);
+    let unloaded = false;
 
-    const find = async () => {
+    const currentFindCall = ref(0);
+
+    const find = async (call: number) => {
       isLoading.value = true;
       error.value = undefined;
 
@@ -112,10 +124,44 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
       }
 
       try {
+        const originalParams: Params = params.value;
+        const originalQuery: Query & { $limit?: number } = originalParams.query || {};
         // TODO: the typecast below is necessary due to the prerelease state of feathers v5. The problem there is
         // that the AdapterService interface is not yet updated and is not compatible with the ServiceMethods interface.
-        const res = await (service as unknown as ServiceMethods<M>).find(params.value);
-        data.value = Array.isArray(res) ? res : [res];
+        const res = await (service as unknown as ServiceMethods<M> | AdapterService<M>).find(originalParams);
+        if (call !== currentFindCall.value) {
+          // stop handling response since there already is a new find call running within this composition
+          return;
+        }
+        if (isPaginated(res) && !loadAllPages) {
+          data.value = [...res.data];
+        } else if (!isPaginated(res)) {
+          data.value = Array.isArray(res) ? res : [res];
+        } else {
+          // extract data from page response
+          let loadedPage: Paginated<M> = res;
+          let loadedItemsCount = loadedPage.data.length;
+          data.value = [...loadedPage.data];
+          // limit might not be specified in the original query if default pagination from backend is applied, that's why we use this fallback pattern
+          const limit: number = originalQuery.$limit || loadedPage.data.length;
+          // if chunking is enabled we go on requesting all following pages until all data have been received
+          while (!unloaded && loadedPage.total > loadedItemsCount) {
+            // skip can be a string in cases where key based chunking/pagination is done e.g. in DynamoDb via `LastEvaluatedKey`
+            const skip: string | number =
+              typeof loadedPage.skip === 'string' ? loadedPage.skip : loadedPage.skip + limit;
+            // request next page
+            loadedPage = (await (service as unknown as ServiceMethods<M> | AdapterService<M>).find({
+              ...originalParams,
+              query: { ...originalQuery, $skip: skip, $limit: limit },
+            })) as Paginated<M>;
+            if (call !== currentFindCall.value) {
+              // stop handling/requesting further pages since there already is a new find call running within this composition
+              return;
+            }
+            loadedItemsCount += loadedPage.data.length;
+            data.value = [...data.value, ...loadedPage.data];
+          }
+        }
       } catch (_error) {
         error.value = _error as FeathersError;
       }
@@ -124,10 +170,12 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     };
 
     const load = () => {
-      void find();
+      currentFindCall.value = currentFindCall.value + 1;
+      void find(currentFindCall.value);
     };
 
     const unload = () => {
+      unloaded = true;
       unloadEventHandlers();
       feathers.off('connect', load);
     };
