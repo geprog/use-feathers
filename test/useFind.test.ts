@@ -423,7 +423,7 @@ describe('Find composition', () => {
     expect(findComposition && findComposition.error.value).toBeTruthy();
   });
 
-  it('should also load single entity response', async () => {
+  it('should load single entity response', async () => {
     expect.assertions(3);
 
     // given
@@ -1047,7 +1047,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toStrictEqual(testModels);
     });
 
-    it('should also load chunked data with lastEvaluatedKey patterns (misused $skip for it)', async () => {
+    it('should load data with pagination using lastEvaluatedKey patterns', async () => {
       expect.assertions(3);
 
       // given
