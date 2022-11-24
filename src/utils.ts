@@ -1,4 +1,4 @@
-import type { AdapterService } from '@feathersjs/adapter-commons';
+// import type { AdapterService } from '@feathersjs/adapter-commons';
 import type { Application, Id, Paginated, ServiceMethods } from '@feathersjs/feathers';
 
 export type PotentialIds = {
@@ -6,12 +6,13 @@ export type PotentialIds = {
   _id?: Id;
 };
 
-export function getId(item: PotentialIds): Id {
+export function getId(_item: unknown): Id {
+  const item: PotentialIds = _item as PotentialIds;
   if (item.id) {
-    return item.id;
+    return item.id.toString();
   }
   if (item._id) {
-    return item._id;
+    return item._id.toString();
   }
   throw new Error('Unable to retrieve id from item');
 }
@@ -24,11 +25,7 @@ export type ServiceTypes<CustomApplication> = CustomApplication extends Applicat
 export type ServiceModel<
   CustomApplication,
   T extends keyof ServiceTypes<CustomApplication>,
-> = ServiceTypes<CustomApplication>[T] extends AdapterService<infer M1>
-  ? M1
-  : ServiceTypes<CustomApplication>[T] extends ServiceMethods<infer M2>
-  ? M2
-  : never;
+> = ServiceTypes<CustomApplication>[T] extends ServiceMethods<infer M2> ? M2 : never;
 
 export function isPaginated<T>(response: T | T[] | Paginated<T>): response is Paginated<T> {
   const { total, limit, skip, data } = response as Paginated<T>;

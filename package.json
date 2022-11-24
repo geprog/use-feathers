@@ -29,12 +29,13 @@
     "release": "semantic-release"
   },
   "dependencies": {
+    "pinia": "^2.0.25",
     "sift": "^15.0.0"
   },
   "devDependencies": {
-    "@feathersjs/adapter-commons": "5.0.0-pre.15",
-    "@feathersjs/errors": "5.0.0-pre.15",
-    "@feathersjs/feathers": "5.0.0-pre.15",
+    "@feathersjs/adapter-commons": "5.0.0-pre.17",
+    "@feathersjs/errors": "5.0.0-pre.17",
+    "@feathersjs/feathers": "5.0.0-pre.17",
     "@geprog/eslint-config": "1.1.0",
     "@geprog/semantic-release-config": "1.0.0",
     "@vue/test-utils": "2.0.0",
