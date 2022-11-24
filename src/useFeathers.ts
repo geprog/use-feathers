@@ -1,7 +1,8 @@
 import { Application, FeathersService } from '@feathersjs/feathers';
+import { reactive } from 'vue';
 
 import { loadServiceEventHandlers } from './realtime';
-import { BasicStore, Store } from './store';
+import { PiniaStore, Store } from './store';
 import useFind, { UseFindFunc } from './useFind';
 import useGet, { UseGetFunc } from './useGet';
 import { ServiceModel, ServiceTypes } from './utils';
@@ -15,10 +16,14 @@ type Service<T> = {
   remove: FeathersService<T>['remove'];
 };
 
-type FService<
-  CustomApplication extends Application,
-  T extends keyof ServiceTypes<CustomApplication>[T],
-> = ServiceTypes<CustomApplication>[T];
+export type UseFeathers<CustomApplication> = <
+  T extends keyof ServiceTypes<CustomApplication>,
+  M = ServiceModel<CustomApplication, T>,
+>(
+  serviceName: T,
+) => Service<M>;
+
+const loadedServices = reactive(new Map<string, Service<unknown>>());
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function useFeathers<CustomApplication extends Application>(
@@ -27,32 +32,34 @@ export function useFeathers<CustomApplication extends Application>(
     serviceName: T,
   ) => Store<S>,
 ) {
-  const serviceNames = Object.keys(feathers.services as Record<string, unknown>);
+  type ServiceName = keyof ServiceTypes<CustomApplication>;
 
-  const services = serviceNames.reduce((acc, serviceName) => {
+  return <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
+    _serviceName: T,
+  ): Service<M> => {
+    const serviceName = _serviceName as keyof ServiceName; // TODO: fix this
+
+    // reuse existing service
+    if (loadedServices.has(serviceName)) {
+      return loadedServices.get(serviceName) as Service<M>;
+    }
+
     const service = feathers.service(serviceName);
-    const store = createStore ? createStore(serviceName) : new BasicStore();
+    const store = createStore ? createStore(serviceName) : PiniaStore(serviceName)();
 
     loadServiceEventHandlers(service, store);
 
-    acc[serviceName] = {
-      find: useFind(feathers, store, serviceName),
-      get: useGet(feathers, store, serviceName),
+    const _service = {
+      find: useFind(feathers, store, serviceName) as UseFindFunc<M>,
+      get: useGet(feathers, store, serviceName) as UseGetFunc<M>,
       create: service.create.bind(service),
       patch: service.patch.bind(service),
       update: service.update.bind(service),
       remove: service.remove.bind(service),
     };
-    return acc;
-  }, {} as { [serviceName in ServiceTypes<CustomApplication>]: FService<CustomApplication, serviceName> });
 
-  return <T extends keyof ServiceTypes<CustomApplication>, M = ServiceModel<CustomApplication, T>>(
-    serviceName: T,
-  ): Service<M> => {
-    const service = services[serviceName as string] as Service<M>;
-    if (!service) {
-      throw new Error(`Service ${serviceName as string} does not exist`);
-    }
-    return service;
+    loadedServices.set(serviceName, _service);
+
+    return _service;
   };
 }

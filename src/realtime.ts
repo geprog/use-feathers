@@ -1,4 +1,4 @@
-import { Application, FeathersService } from '@feathersjs/feathers/lib';
+import { Application, FeathersService } from '@feathersjs/feathers';
 
 import { Store } from './store';
 import { getId, ServiceTypes } from './utils';

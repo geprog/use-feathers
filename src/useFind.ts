@@ -1,7 +1,7 @@
 import type { FeathersError } from '@feathersjs/errors';
 import type { Application, Params, ServiceMethods } from '@feathersjs/feathers';
 import sift from 'sift';
-import { getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
+import { computed, getCurrentInstance, onBeforeUnmount, Ref, ref, watch } from 'vue';
 
 import { Store } from './store';
 import { getId, ServiceModel, ServiceTypes } from './utils';
@@ -34,9 +34,6 @@ export default <
   ): UseFind<M> => {
     const isLoading = ref(false);
     const error = ref<FeathersError>();
-
-    const filter = (record: M) =>
-      !params.value || (params.value.query !== undefined && !sift(params.value.query)(record));
 
     const service = feathers.service(serviceName as string);
 
@@ -79,6 +76,9 @@ export default <
       onBeforeUnmount(unload);
     }
 
+    const filter = computed(
+      () => (record: M) => !params.value || (params.value.query !== undefined && !sift(params.value.query)(record)),
+    );
     const data = store.getFilteredRecords(filter);
 
     return { data, isLoading, unload, error };
