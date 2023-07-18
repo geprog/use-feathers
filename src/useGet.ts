@@ -27,7 +27,7 @@ function loadServiceEventHandlers<
 
   const onItemChanged = (item: M): void => {
     if (_id.value === getId(item)) {
-      data.value = item;
+      data.value = { ...data.value, ...item };
     }
   };
 

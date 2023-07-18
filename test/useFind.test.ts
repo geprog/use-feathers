@@ -13,6 +13,7 @@ const testModel: TestModel = { _id: '111', mood: '😀', action: '🧘', categor
 const additionalTestModel: TestModel = { _id: 'aaa', mood: '🤩', action: '🏄', category: 'sport' };
 const additionalTestModel2: TestModel = { _id: 'bbb', mood: '', action: '', category: 'sport' };
 const changedTestModel: TestModel = { ...testModel, mood: '😅', action: '🏋️', category: 'sport' };
+const partialChangedTestModel: Partial<TestModel> = { _id: '111', action: '🏋️', category: 'sport' };
 const testModels: TestModel[] = [testModel, additionalTestModel2];
 
 describe('Find composition', () => {
@@ -841,6 +842,38 @@ describe('Find composition', () => {
       // then
       expect(findComposition).toBeTruthy();
       expect(findComposition && findComposition.data.value).toStrictEqual([changedTestModel]);
+    });
+
+    it('should handle "patch" events with partial responses properly', async () => {
+      expect.assertions(2);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: vi.fn(() => testModels),
+          on: emitter.on,
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels');
+      });
+      await nextTick();
+
+      // when
+      emitter.emit('patched', partialChangedTestModel);
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toContainEqual({
+        ...testModel,
+        ...partialChangedTestModel,
+      });
     });
 
     it('should listen to "remove" events', async () => {
