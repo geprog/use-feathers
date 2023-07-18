@@ -870,7 +870,10 @@ describe('Find composition', () => {
 
       // then
       expect(findComposition).toBeTruthy();
-      expect(findComposition && findComposition.data.value).toContainEqual({ ...testModel, ...partialChangedTestModel });
+      expect(findComposition && findComposition.data.value).toContainEqual({
+        ...testModel,
+        ...partialChangedTestModel,
+      });
     });
 
     it('should listen to "remove" events', async () => {

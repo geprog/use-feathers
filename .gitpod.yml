@@ -8,5 +8,3 @@ tasks:
   - before: npm install -g pnpm@7
     init: pnpm install
     command: pnpm run start
-
-
