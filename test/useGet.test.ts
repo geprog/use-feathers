@@ -12,6 +12,7 @@ import TestModel from '$/__helpers__/TestModel';
 const testModel: TestModel = { _id: '111', mood: '😀', action: '🧘', category: 'enjoy' };
 const additionalTestModel: TestModel = { _id: 'aaa', mood: '🤩', action: '🏄', category: 'sport' };
 const changedTestModel: TestModel = { ...testModel, mood: '😅', action: '🏋️', category: 'sport' };
+const partialChangedTestModel: Partial<TestModel> = { _id: '111', action: '🏋️', category: 'sport' };
 
 describe('Get composition', () => {
   beforeEach(() => {
@@ -502,6 +503,38 @@ describe('Get composition', () => {
       // then
       expect(getComposition).toBeTruthy();
       expect(getComposition && getComposition.data.value).toStrictEqual(testModel);
+    });
+
+    it('should handle "patch" events with partial responses properly', async () => {
+      expect.assertions(3);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          get: vi.fn(() => testModel),
+          on: emitter.on,
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useGet = useGetOriginal(feathersMock);
+      let getComposition = null as UseGet<TestModel> | null;
+      mountComposition(() => {
+        getComposition = useGet('testModels', ref(testModel._id));
+      });
+
+      // before then to ensure previous state
+      await nextTick();
+      expect(getComposition && getComposition.data.value).toStrictEqual(testModel);
+
+      // when
+      emitter.emit('patched', partialChangedTestModel);
+
+      // then
+      expect(getComposition).toBeTruthy();
+      expect(getComposition && getComposition.data.value).toStrictEqual({ ...testModel, ...partialChangedTestModel });
     });
 
     it('should listen to "remove" events', async () => {

@@ -34,18 +34,20 @@ function loadServiceEventHandlers<
   };
 
   const onItemChanged = (changedItem: M): void => {
+    const existingItem = data.value.find((item) => getId(item) === getId(changedItem));
+    const newItem = { ...existingItem, ...changedItem };
     // ignore items not matching the query or when no params are set
-    if (!params.value || (params.value.query !== undefined && !sift(params.value.query)(changedItem))) {
+    if (!params.value || (params.value.query !== undefined && !sift(params.value.query)(newItem))) {
       // remove item from the list if they have been on it before
-      data.value = data.value.filter((item) => getId(item) !== getId(changedItem));
+      data.value = data.value.filter((item) => getId(item) !== getId(newItem));
       return;
     }
 
-    const itemIndex = data.value.findIndex((item) => getId(item) === getId(changedItem));
+    const itemIndex = data.value.findIndex((item) => getId(item) === getId(newItem));
     if (itemIndex === -1) {
-      data.value = [...data.value, changedItem];
+      data.value = [...data.value, newItem];
     } else {
-      data.value = [...data.value.slice(0, itemIndex), changedItem, ...data.value.slice(itemIndex + 1)];
+      data.value = [...data.value.slice(0, itemIndex), newItem, ...data.value.slice(itemIndex + 1)];
     }
   };
 
