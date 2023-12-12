@@ -32,5 +32,10 @@ export type ServiceModel<
 
 export function isPaginated<T>(response: T | T[] | Paginated<T>): response is Paginated<T> {
   const { total, limit, skip, data } = response as Paginated<T>;
-  return total !== undefined && limit !== undefined && skip !== undefined && data !== undefined && Array.isArray(data);
+  return (
+    typeof total === 'number' &&
+    typeof limit === 'number' &&
+    (typeof skip === 'number' || typeof skip === 'string') &&
+    Array.isArray(data)
+  );
 }
