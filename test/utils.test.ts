@@ -29,7 +29,7 @@ describe('getId()', () => {
 });
 
 describe('isPaginated()', () => {
-  it('requires total, limit, skip and data array to be paginated', () => {
+  it('should return true when total, limit, skip and data array are present', () => {
     // given
     const response = {
       total: 100,
@@ -42,7 +42,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(true);
   });
 
-  it('otal, limit and skip as "0" is also paginated', () => {
+  it('should return true when total, limit and skip is "0"', () => {
     // given
     const response = {
       total: 0,
@@ -55,7 +55,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(true);
   });
 
-  it('skip as string is also paginated', () => {
+  it('should return true when skip is a string', () => {
     // given
     const response = {
       total: 100,
@@ -68,7 +68,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(true);
   });
 
-  it('missing total is not paginated', () => {
+  it('should return false when total is missing', () => {
     // given
     const response = {
       limit: 10,
@@ -80,7 +80,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(false);
   });
 
-  it('missing limit is not paginated', () => {
+  it('should return false when limit is missing', () => {
     // given
     const response = {
       total: 100,
@@ -92,7 +92,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(false);
   });
 
-  it('missing skip is not paginated', () => {
+  it('should return false when skip is missing', () => {
     // given
     const response = {
       total: 100,
@@ -104,7 +104,7 @@ describe('isPaginated()', () => {
     expect(isPaginated<typeof response>(response)).toBe(false);
   });
 
-  it('non array data is not paginated', () => {
+  it('should return false when data is no array', () => {
     // given
     const response = {
       total: 100,
