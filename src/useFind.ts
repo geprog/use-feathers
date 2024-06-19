@@ -14,8 +14,16 @@ function loadServiceEventHandlers<
   service: FeathersService<CustomApplication, ServiceTypes<CustomApplication>[T]>,
   params: Ref<Params | undefined | null>,
   data: Ref<M[]>,
+  isLoading: Ref<boolean>,
 ): () => void {
+  const eventCache: (() => void)[] = [];
+
   const onCreated = (createdItem: M): void => {
+    if (isLoading.value) {
+      eventCache.push(() => onCreated(createdItem));
+      return;
+    }
+
     // ignore items not matching the query or when no params are set
     if (!params.value || (params.value.query !== undefined && !sift(params.value.query)(createdItem))) {
       return;
@@ -30,10 +38,18 @@ function loadServiceEventHandlers<
   };
 
   const onRemoved = (item: M): void => {
+    if (isLoading.value) {
+      eventCache.push(() => onRemoved(item));
+      return;
+    }
     data.value = data.value.filter((_item) => getId(_item) !== getId(item));
   };
 
   const onItemChanged = (changedItem: M): void => {
+    if (isLoading.value) {
+      eventCache.push(() => onItemChanged(changedItem));
+      return;
+    }
     const existingItem = data.value.find((item) => getId(item) === getId(changedItem));
     const newItem = { ...existingItem, ...changedItem };
     // ignore items not matching the query or when no params are set
@@ -70,6 +86,15 @@ function loadServiceEventHandlers<
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     service.off('updated', onItemChanged);
   };
+
+  watch(isLoading, () => {
+    while (eventCache.length > 0 && !isLoading.value) {
+      const event = eventCache.shift();
+      if (event) {
+        event();
+      }
+    }
+  });
 
   return unloadEventHandlers;
 }
@@ -110,7 +135,7 @@ export default <CustomApplication extends Application>(feathers: CustomApplicati
     const error = ref<FeathersError>();
 
     const service = feathers.service(serviceName as string);
-    const unloadEventHandlers = loadServiceEventHandlers(service, params, data);
+    const unloadEventHandlers = loadServiceEventHandlers(service, params, data, isLoading);
     let unloaded = false;
 
     const currentFindCall = ref(0);

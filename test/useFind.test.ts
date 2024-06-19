@@ -455,7 +455,7 @@ describe('Find composition', () => {
   });
 
   describe('Event Handlers', () => {
-    it('should listen to "create" events', () => {
+    it('should listen to "create" events', async () => {
       expect.assertions(2);
 
       // given
@@ -474,6 +474,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
+      await nextTick();
 
       // when
       emitter.emit('created', additionalTestModel);
@@ -541,7 +542,7 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).toContainEqual(additionalTestModel);
     });
 
-    it('should ignore "create" events when query is not matching', () => {
+    it('should ignore "create" events when query is not matching', async () => {
       expect.assertions(2);
 
       // given
@@ -560,6 +561,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels', ref({ query: { mood: 'please-do-not-match' } }));
       });
+      await nextTick();
 
       // when
       emitter.emit('created', additionalTestModel);
@@ -905,6 +907,40 @@ describe('Find composition', () => {
       expect(findComposition && findComposition.data.value).not.toContainEqual(testModel);
     });
 
+    it('should cache events when still loading', async () => {
+      expect.assertions(4);
+
+      // given
+      const emitter = eventHelper();
+      const feathersMock = {
+        service: () => ({
+          find: vi.fn(() => [additionalTestModel2, testModel]),
+          on: emitter.on,
+          off: vi.fn(),
+        }),
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as Application;
+      const useFind = useFindOriginal(feathersMock);
+      let findComposition = null as UseFind<TestModel> | null;
+      mountComposition(() => {
+        findComposition = useFind('testModels');
+      });
+      
+      // when
+      emitter.emit('updated', changedTestModel);
+      emitter.emit('created', additionalTestModel);
+      emitter.emit('removed', additionalTestModel2);
+      await nextTick();
+      await nextTick();
+
+      // then
+      expect(findComposition).toBeTruthy();
+      expect(findComposition && findComposition.data.value).toHaveLength(2);
+      expect(findComposition && findComposition.data.value[0]).toStrictEqual(changedTestModel);
+      expect(findComposition && findComposition.data.value[1]).toStrictEqual(additionalTestModel);
+    });
+
     it('should unload the event handlers', () => {
       expect.assertions(7);
 
@@ -1073,6 +1109,7 @@ describe('Find composition', () => {
         findComposition = useFind('testModels', undefined, { loadAllPages: true });
       });
       await nextTick();
+      await nextTick();
 
       // then
       expect(serviceFind).toHaveBeenCalledTimes(2);
@@ -1112,6 +1149,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels', undefined, { loadAllPages: true });
       });
+      await nextTick();
       await nextTick();
 
       // then
