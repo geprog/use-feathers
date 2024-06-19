@@ -926,7 +926,7 @@ describe('Find composition', () => {
       mountComposition(() => {
         findComposition = useFind('testModels');
       });
-      
+
       // when
       emitter.emit('updated', changedTestModel);
       emitter.emit('created', additionalTestModel);
